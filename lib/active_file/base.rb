@@ -24,11 +24,11 @@ class ActiveFile::Base
     def format=(format)
       raise DoubleInitializationError, "format is already initialized" if @format
       unless format.is_a?(Class) && format.ancestors.include?(ActiveFile::Format)
-        raise InvalidFormat, "Expected an ActiveFile::Format < class, given #{formatter.pretty_inspect}"
+        raise InvalidFormat, "Expected an ActiveFile::Format < class, given #{format.pretty_inspect}"
       end
 
       @format = format
-      @format.instance_methods(false).each do |format_method|
+      @format.provided_methods.each do |format_method|
         if instance_methods.include?(format_method)
           raise FormatterMethodConflict, "Formatter method `#{format_method}` seems to be defined already in #{self.name}"
         end
@@ -37,12 +37,12 @@ class ActiveFile::Base
       end
     end
 
-    def select(path)
-      ActiveFile::Selector.new(self, path)
+    def select(path, options = {})
+      ActiveFile::Selector.new(self, path, options)
     end
 
     def all
-      select('**')
+      select('**/*', only: :entities)
     end
   end
 
@@ -58,8 +58,12 @@ class ActiveFile::Base
     File.basename(path, File.extname(path))
   end
 
-  def fullpath
-    @fullpath ||= "#{self.class.root_path}/#{path}"
+  def full_name
+    path.delete_suffix(File.extname(path))
+  end
+
+  def full_path
+    @_full_path ||= "#{self.class.root_path}/#{path}"
   end
 
 end

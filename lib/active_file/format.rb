@@ -1,6 +1,11 @@
 class ActiveFile::Format
   class NotHandleableEntity < StandardError; end
 
+  def self.provided_methods
+    ActiveFile::Format.instance_methods(false) +
+      ancestors.split(ActiveFile::Format)[0].map { |klass| klass.instance_methods(false) }.flatten
+  end
+
   attr_reader :entity
 
   def initialize(entity)
@@ -12,7 +17,7 @@ class ActiveFile::Format
   end
 
   def content
-    File.read(entity.fullpath)
+    File.read(entity.full_path)
   end
 
 end

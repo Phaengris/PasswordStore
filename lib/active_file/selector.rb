@@ -7,18 +7,22 @@ class ActiveFile::Selector
 
   attr_internal_reader :klass
   attr_internal_reader :path
+  attr_internal_reader :options
 
-  def initialize(klass, path = '**')
+  def initialize(klass, path = '**', options = {})
     unless klass.is_a?(Class) && klass.ancestors.include?(ActiveFile::Base)
       raise NotHandleableEntity, "Expected an ActiveFile::Base > class, given #{klass.pretty_print_inspect}"
     end
-    @klass = klass
-    @path = ActiveFile::Utils.clean_path(path)
+    @_klass = klass
+    @_path = ActiveFile::Utils.clean_path(path)
+    @_options = options
   end
 
   def each(&block)
-    Dir.glob(fullpath).each do |entity_path|
+    Dir.glob(full_path).each do |entity_path|
       if Dir.exist?(entity_path)
+        next if options[:only] == :entities
+
         yield self.class.new(klass, local_path(entity_path))
       else
         yield klass.new(local_path(entity_path))
@@ -26,8 +30,8 @@ class ActiveFile::Selector
     end
   end
 
-  def fullpath
-    @fullpath ||= "#{klass.root_path}/#{path}"
+  def full_path
+    @_full_path ||= "#{klass.root_path}/#{path}"
   end
 
   private
