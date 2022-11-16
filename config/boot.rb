@@ -5,7 +5,8 @@ require 'zeitwerk'
 
 require_relative '../lib/framework'
 
-Dir.glob(Framework.path('lib/core/*')).each { |core_patch| require core_patch }
+Dir.glob(Framework.path('lib/core/**/*.rb')).each { |core_patch| load core_patch }
+Dir.glob(Framework.path('lib/overrides/**/*.rb')).each { |override| load override }
 
 loader = Zeitwerk::Loader.new
 
@@ -14,8 +15,9 @@ loader.push_dir(Framework.path('app/models'))
 loader.push_dir(Framework.path('app/views'), namespace: ViewModels)
 
 loader.ignore(Framework.path('lib/core'))
+loader.ignore(Framework.path('lib/overrides'))
 loader.ignore(Framework.path('lib/framework/views.rb'))
 loader.ignore(Framework.path('lib/framework/view_models.rb'))
-loader.ignore(Framework.path('app/views/**/*.glim.rb'))
+loader.ignore(Framework.path('app/views/**/*.glimmer.rb'))
 
 loader.setup

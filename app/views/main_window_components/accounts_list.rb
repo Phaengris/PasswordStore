@@ -1,4 +1,4 @@
-class ViewModels::MainWindow::AccountsList
+class ViewModels::MainWindowComponents::AccountsList
   TYPEABLE_CHARS = (
     ('a'..'z').to_a +
       [' '] +
@@ -38,10 +38,18 @@ class ViewModels::MainWindow::AccountsList
       end
     when 'Up'
       i = selected_account_options.find_index(selected_account)
-      self.selected_account = selected_account_options[i - 1] if i > 0
+      if i.nil?
+        self.selected_account = selected_account_options.last
+      else
+        self.selected_account = selected_account_options[i - 1] if i > 0
+      end
     when 'Down'
       i = selected_account_options.find_index(selected_account)
-      self.selected_account = selected_account_options[i + 1] if i < selected_account_options.count - 1
+      if i.nil?
+        self.selected_account = selected_account_options.first
+      else
+        self.selected_account = selected_account_options[i + 1] if i < selected_account_options.count - 1
+      end
     end
   end
 
@@ -55,10 +63,17 @@ class ViewModels::MainWindow::AccountsList
     end
   end
 
+  def selected_account_path
+    return nil unless selected_account.present?
+
+    "#{selected_account}.gpg"
+  end
+
   private
 
   def search_mask
-    '*' + search_terms.strip.split(/[\/\s]+/).reject(&:blank?).join('*') + '*'
+    mask = '*' + search_terms.strip.split(/[\/\s]+/).reject(&:blank?).join('*') + '*'
+    "#{mask}/#{mask}"
   end
 
 end
