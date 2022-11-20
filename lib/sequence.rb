@@ -11,4 +11,8 @@ class Sequence
     @index += 1
   end
 
+  def with_next(&block)
+    yield self.next
+  end
+
 end

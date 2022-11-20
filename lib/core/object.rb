@@ -5,7 +5,6 @@ class Object
       attr_internal_accessor *attributes
 
       define_method :initialize do |*args|
-        puts "Initialize #{attributes.pretty_inspect} with #{args.pretty_inspect}"
         case args
         when Hash
           args.each do |attr, val|

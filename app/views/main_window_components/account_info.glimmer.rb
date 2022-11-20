@@ -1,14 +1,77 @@
-def render_account_info
-  view.children.each(&:destroy)
-  view.content {
+frame {
+  grid row_weight: 1
+  # flat, groove, raised, ridge, solid, or sunken
+  relief 'solid' # for Azure theme
+  # relief 'groove' # for default Tk theme
 
+  frame {
+    grid row: 0, pady: [0, 15]
+    padding 0
+    label {
+      grid row: 0, column: 0, column_weight: 1, sticky: 'nw'
+      font 'caption'
+      text 'Domain'
+    }
+    label {
+      grid row: 1, column: 0, sticky: 'nw'
+      text <= [account_info, :dir, computed_by: :account_path]
+    }
+    button {
+      grid row: 0, column: 1, row_span: 2, row_weight: 0, sticky: 'ne'
+      width 0
+      text 'Cpy'
+    }
   }
-end
 
-on('AccountsListSelect') { |event|
-  account_info.account_path = event.detail
-  render_account_info
-  break false
+  frame {
+    grid row: 1, pady: [0, 15]
+    padding 0
+    label {
+      grid row: 0, column: 0, column_weight: 1, sticky: 'nw'
+      font 'caption'
+      text 'Account'
+    }
+    label {
+      grid row: 1, column: 0, sticky: 'nw'
+      text <= [account_info, :name, computed_by: :account_path]
+    }
+    button {
+      grid row: 0, column: 1, row_span: 2, row_weight: 0, sticky: 'ne'
+      width 0
+      text 'Cpy'
+    }
+  }
+
+  frame {
+    grid row: 2, sticky: 'ew', pady: [0, 15]
+    padding 0
+    button {
+      grid row: 0, sticky: 'ne', pady: [0, 15]
+      text 'Cpy pass'
+      on('command') { account_info.copy_password_to_clipboard }
+    }
+    label {
+      grid row: 1, sticky: 'ne'
+      text <= [account_info, :copy_password_to_clipboard_message]
+    }
+  }
+
+  frame {
+    grid row: 3, row_weight: 1
+    padding 0
+    button {
+      grid row: 0, row_weight: 1, sticky: 'se', pady: [0, 15]
+      width 0
+      text 'Edit'
+    }
+    button {
+      grid row: 1, sticky: 'se'
+      width 0
+      text 'Delete'
+    }
+  }
 }
 
-render_account_info
+widget.on_redirected_event('AccountsListSelect') { |event|
+  account_info.account_path = event.detail
+}

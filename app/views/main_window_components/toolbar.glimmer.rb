@@ -1,27 +1,23 @@
 columns = Sequence.new
 
-button {
-  grid row: 0, column: columns.next, sticky: '', padx: 5
-  text 'Add account'
+@search = entry {
+  grid row: 0, column: columns.next, row_weight: 1, padx: [0, 5]
+  focus true
+  on('KeyPress') { |event| case event.keysym
+                           when 'Escape' then @search.text = ''
+                           when 'Up', 'Down' then widget.raise_event("SearchEntryKey#{event.keysym}")
+                           end }
+  on('Change') { |value| widget.raise_event('SearchStringChange', value.to_s) }
 }
 button {
-  grid row: 0, column: columns.next, sticky: '', padx: 5
-  text 'Edit account'
+  grid row: 0, column: columns.next, sticky: 'ne'
+  width 0
+  text 'Add'
+  on('command') { widget.raise_event('NewAccountWindowCall') }
 }
 button {
-  grid row: 0, column: columns.next, sticky: '', padx: 5
-  text 'Delete account'
-}
-separator {
-  grid row: 0, column: columns.next, padx: 5
-}
-button {
-  grid row: 0, column: columns.next, sticky: '', padx: 5
-  text 'Settings'
-  on('command') {
-    # ... .event_generate('<SettingsWindowCalled>')
-  }
-}
-frame {
-  grid row: 0, column: columns.next, column_weight: 99
+  grid row: 0, column: columns.next, sticky: 'ne', padx: [15, 0]
+  width 0
+  text 'Set'
+  on('command') { widget.raise_event('SettingsWindowCall') }
 }

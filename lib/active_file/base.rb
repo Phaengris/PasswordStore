@@ -58,6 +58,10 @@ class ActiveFile::Base
     File.basename(path, File.extname(path))
   end
 
+  def dir
+    File.dirname(path)
+  end
+
   def full_name
     path.delete_suffix(File.extname(path))
   end

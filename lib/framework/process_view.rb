@@ -6,8 +6,6 @@ class Framework::ProcessView
   init_with_attributes :view_path, :args, :block
 
   def call
-    puts "Path #{view_path}, args #{args.pretty_inspect}, block #{block.pretty_inspect}"
-
     view_abs_path = Framework.path('app/views').join("#{view_path}.glimmer.rb")
     raise TemplateNotFound, "Can't find template #{view_abs_path}" unless File.exist?(view_abs_path)
 
@@ -30,12 +28,20 @@ class Framework::ProcessView
       .instance_variable_get(:@evaluated)
   end
 
-  def window?
-    view_path.to_s.end_with?('_window')
+  def container_type
+    case
+    when main_window? then :root
+    when window? then :toplevel
+    else :frame
+    end
   end
 
-  def container_type
-    window? ? :root : :frame
+  def main_window?
+    view_path.to_s == 'main_window'
+  end
+
+  def window?
+    view_path.to_s.end_with?('_window')
   end
 
   class TemplateEvaluator
@@ -45,11 +51,28 @@ class Framework::ProcessView
       define_instance_reader :view_model, view_model_instance
       define_instance_reader view_model_name, view_model_instance
 
-      @evaluated = send(container_type) {
-        block.call if block
-      }
+      if container_type == :toplevel
+        Views.MainWindow.content do
+          @evaluated = send(container_type) {
+            define_instance_reader :view, self
+            define_instance_reader :widget, self
+
+            instance_exec(&block) if block
+          }
+        end
+
+      else
+        @evaluated = send(container_type) {
+          define_instance_reader :view, self
+          define_instance_reader :widget, self
+
+          instance_exec(&block) if block
+        }
+      end
+
       define_instance_reader :view, @evaluated
-      define_instance_reader :this, @evaluated
+      define_instance_reader :widget, @evaluated
+
       @evaluated.content do
         instance_eval(template_content)
       end
