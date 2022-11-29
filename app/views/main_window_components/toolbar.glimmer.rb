@@ -1,7 +1,7 @@
 columns = Sequence.new
 
 @search = entry {
-  grid row: 0, column: columns.next, row_weight: 1, padx: [0, 5]
+  grid row: 0, column: columns.next, row_weight: 1, padx: [0, 5], sticky: 'ew'
   focus true
   on('KeyPress') { |event| case event.keysym
                            when 'Escape' then @search.text = ''

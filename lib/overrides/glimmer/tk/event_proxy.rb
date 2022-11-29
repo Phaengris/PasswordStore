@@ -9,13 +9,8 @@ class Glimmer::Tk::EventProxy
     @data ||= OpenStruct.new(YAML.load(event.detail))
   end
 
-  def key_data
-    {
-      char: event.char,
-      keycode: event.keycode,
-      keysym: event.keysym,
-      keysym_num: event.keysym_num
-    }
+  def ctrl?
+    event.state == 4
   end
 
 end

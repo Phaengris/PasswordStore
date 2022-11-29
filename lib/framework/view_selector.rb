@@ -6,7 +6,7 @@ class Framework::ViewSelector
 
     if File.exist?(Framework.path("app/views/#{next_path}.glimmer.rb"))
       # return Framework::ProcessView.call(next_path, *args, block)
-      return Framework::ProcessView.call(next_path, args, block)
+      return Framework::CreateView.call(next_path, args, block)
     end
 
     if Dir.exist?(Framework.path("app/views/#{next_path}"))

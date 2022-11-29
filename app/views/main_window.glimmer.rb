@@ -30,6 +30,10 @@ on('SettingsWindowCall') { Views.settings_window }
 on('NewAccountWindowCall') { Views.new_account_window }
 
 on('KeyPress') { |event| case [event.keysym.downcase, event.state]
+                         when ['c', 4], ['insert', 4]
+                           @account_info.raise_event('CopyPasswordRequest')
+                         when ['b', 4]
+                           @account_info.raise_event('CopyAccountNameRequest')
                          when ['n', 4]
                            Views.new_account_window
                          when ['e', 4]

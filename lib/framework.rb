@@ -7,6 +7,10 @@ module Framework
     root.join(local_path)
   end
 
+  def self.views_path
+    path('app/views')
+  end
+
   def self.exit
     # TODO: may be some exit handlers
     Kernel.exit

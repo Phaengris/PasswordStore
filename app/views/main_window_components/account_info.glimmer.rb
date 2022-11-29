@@ -61,12 +61,10 @@ frame {
     padding 0
     button {
       grid row: 0, row_weight: 1, sticky: 'se', pady: [0, 15]
-      width 0
       text 'Edit'
     }
     button {
       grid row: 1, sticky: 'se'
-      width 0
       text 'Delete'
     }
   }
@@ -75,3 +73,5 @@ frame {
 widget.on_redirected_event('AccountsListSelect') { |event|
   account_info.account_path = event.detail
 }
+on('CopyPasswordRequest') { account_info.copy_password_to_clipboard }
+on('CopyAccountNameRequest') { account_info.copy_name_to_clipboard }

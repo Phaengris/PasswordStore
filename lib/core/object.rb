@@ -1,10 +1,16 @@
+require 'memoized'
+
 class Object
+  include Memoized
+
   class << self
 
     def init_with_attributes(*attributes)
       attr_internal_accessor *attributes
 
       define_method :initialize do |*args|
+        args = args.first if args.is_a?(Array) && args.one? && args.first.is_a?(Hash)
+
         case args
         when Hash
           args.each do |attr, val|

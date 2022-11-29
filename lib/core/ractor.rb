@@ -2,12 +2,12 @@ class Ractor
   class StatusDetectingError < StandardError; end
 
   def status
-    case self.to_s
+    case self.inspect
     when /running/ then :running
     when /blocking/ then :blocking
     when /terminated/ then :terminated
     else
-      raise StatusDetectingError, "Failed to detect status of #{self.to_s} - any changes in Ruby implementation?"
+      raise StatusDetectingError, "Failed to detect status of #{self.inspect} - any changes in Ruby implementation?"
     end
   end
 
