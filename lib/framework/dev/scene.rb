@@ -109,7 +109,13 @@ class Framework::Dev::Scene
   end
 
   def reload_main_window
+    # Views.MainWindow.children.each do |child|
+    #   child.tk.grid_forget
+    #   child.tk.pack_forget
+    #   child.destroy
+    # end
     Views.MainWindow.children.each(&:destroy)
+    Views.MainWindow.instance_variable_set(:@children, [])
     Views.MainWindow.unbind_all
 
     template_path = Framework.path('app/views/main_window.glimmer.rb')

@@ -46,5 +46,16 @@ module Glimmer_Tk_WidgetProxy_Override
     super
   end
 
+  def unbind_all
+    # TODO: find another way to verify the Glimmer implementation
+    # unless @listeners
+    #   handle_listener('<FakeEvent>') {}
+    #   raise RuntimeError, "Can't find @listeners variable - changes in the Glimmer implementation?" unless @listeners
+    # end
+
+    super
+    @listeners = nil
+  end
+
   ::Glimmer::Tk::WidgetProxy.prepend self
 end
