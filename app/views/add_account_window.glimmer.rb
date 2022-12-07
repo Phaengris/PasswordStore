@@ -1,6 +1,6 @@
-title 'New account'
-widget.center_within_root margin: 30
-widget.grab_set
+title 'Add account'
+widget.center_within_root
+widget.modal
 escapable true
 
 frame {
@@ -11,7 +11,7 @@ frame {
     label {
       grid row: row, column: 0, column_weight: 0, sticky: 'e', column_uniform: 'u', pady: [0, 15], padx: [0, 5]
       font :caption
-      text 'Account'
+      text 'Domain'
     }
     entry {
       grid row: row, column: 1, column_weight: 1, sticky: 'nsew', column_uniform: 'u', pady: [0, 15]
@@ -20,16 +20,54 @@ frame {
   }
 
   rows.with_next { |row|
-    checkbutton {
+    label {
       grid row: row, column: 0, sticky: 'e', pady: [0, 15], padx: [0, 5]
+      font :caption
+      text 'Account'
+    }
+    entry {
+      grid row: row, column: 1, sticky: 'nsew', pady: [0, 15]
+      focus true
+    }
+  }
+
+  rows.with_next { |row|
+    checkbutton {
+      grid row: row, column: 0, sticky: 'e', padx: [0, 5], pady: [0, 5]
     }
     label {
-      grid row: row, column: 1, sticky: 'w', pady: [0, 15]
+      grid row: row, column: 1, sticky: 'w', pady: [0, 5]
       font :caption
       text 'Generate password?'
-      on('command') { |event|
-        pp event
-      }
+    }
+  }
+
+  rows.with_next { |row|
+    label {
+      grid row: row, column: 0, sticky: 'e', padx: [0, 5], pady: [0, 5]
+      # font 'small_caption'
+      text 'Length'
+      state 'disabled'
+    }
+    spinbox {
+      grid row: row, column: 1, sticky: 'w', pady: [0, 5]
+      from 1
+      to 128
+      text '16'
+      width 3
+      state 'disabled'
+    }
+  }
+
+  rows.with_next { |row|
+    checkbutton {
+      grid row: row, column: 0, sticky: 'e', padx: [0, 5], pady: [0, 15]
+      state 'disabled'
+    }
+    label {
+      grid row: row, column: 1, pady: [0, 15]
+      text 'Do not use non-alphanumeric symbols'
+      state 'disabled'
     }
   }
 

@@ -32,6 +32,10 @@ class Framework::Dev::Scene
     self.scene_path.present?
   end
 
+  def changed?
+    app_files_changed
+  end
+
   memoize def scenario_for(view_path)
     raise SceneNotWatched unless watched?
 
@@ -101,6 +105,12 @@ class Framework::Dev::Scene
     proc {
       on('KeyPress') { |event|
         if event.keysym.downcase == 'r' && event.state == 4
+          Framework::Dev::Scene.reload
+          break false
+        end
+      }
+      on('FocusIn') { |_|
+        if Framework::Dev::Scene.changed?
           Framework::Dev::Scene.reload
           break false
         end

@@ -20,4 +20,6 @@ loader.ignore(Framework.path('lib/framework/views.rb'))
 loader.ignore(Framework.path('lib/framework/view_models.rb'))
 loader.ignore(Framework.path('app/views/**/*.glimmer.rb'))
 
+loader.enable_reloading # TODO: if <condition>?
+
 loader.setup

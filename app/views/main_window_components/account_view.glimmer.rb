@@ -14,7 +14,7 @@ frame {
     }
     label {
       grid row: 1, column: 0, sticky: 'nw'
-      text <= [account_info, :dir, computed_by: :account_path]
+      text <= [account_view, :dir, computed_by: :account_path]
     }
     button {
       grid row: 0, column: 1, row_span: 2, row_weight: 0, sticky: 'ne'
@@ -33,7 +33,7 @@ frame {
     }
     label {
       grid row: 1, column: 0, sticky: 'nw'
-      text <= [account_info, :name, computed_by: :account_path]
+      text <= [account_view, :name, computed_by: :account_path]
     }
     button {
       grid row: 0, column: 1, row_span: 2, row_weight: 0, sticky: 'ne'
@@ -48,11 +48,11 @@ frame {
     button {
       grid row: 0, sticky: 'ne', pady: [0, 15]
       text 'Cpy pass'
-      on('command') { account_info.copy_password_to_clipboard }
+      on('command') { account_view.copy_password_to_clipboard }
     }
     label {
       grid row: 1, sticky: 'ne'
-      text <= [account_info, :copy_password_to_clipboard_message]
+      text <= [account_view, :copy_password_to_clipboard_message]
     }
   }
 
@@ -71,7 +71,7 @@ frame {
 }
 
 widget.on_redirected_event('AccountsListSelect') { |event|
-  account_info.account_path = event.detail
+  account_view.account_path = event.detail
 }
-on('CopyPasswordRequest') { account_info.copy_password_to_clipboard }
-on('CopyAccountNameRequest') { account_info.copy_name_to_clipboard }
+on('CopyPasswordRequest') { account_view.copy_password_to_clipboard }
+on('CopyAccountNameRequest') { account_view.copy_name_to_clipboard }

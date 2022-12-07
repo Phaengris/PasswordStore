@@ -1,6 +1,6 @@
 require 'clipboard'
 
-class ViewModels::MainWindowComponents::AccountInfo
+class ViewModels::MainWindowComponents::AccountView
   attr_accessor :account_path
   attr_accessor :copy_password_to_clipboard_message
 

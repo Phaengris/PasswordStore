@@ -13,7 +13,7 @@ button {
   grid row: 0, column: columns.next, sticky: 'ne'
   width 0
   text 'Add'
-  on('command') { widget.raise_event('NewAccountWindowCall') }
+  on('command') { widget.raise_event('AddAccountWindowCall') }
 }
 button {
   grid row: 0, column: columns.next, sticky: 'ne', padx: [15, 0]
