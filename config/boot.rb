@@ -23,3 +23,16 @@ loader.ignore(Framework.path('app/views/**/*.glimmer.rb'))
 loader.enable_reloading # TODO: if <condition>?
 
 loader.setup
+
+# TODO: move into initializers/tk?
+
+# Tk.tk_call('source', Framework.path('app/assets/tk/azure/azure.tcl'))
+# Tk.tk_call('source', Framework.path('app/assets/tk/sun-valley/sv.tcl'))
+# Tk.tk_call('set_theme', 'light')
+# Tk.tk_call('set_theme', 'dark')
+
+Tk.tk_call('source', Framework.path('app/assets/tk/forest/forest-light.tcl'))
+Tk.tk_call('source', Framework.path('app/assets/tk/forest/forest-dark.tcl'))
+Tk::Tile::Style.theme_use "forest-light"
+
+Tk::Tile::Style.configure('Alert.TLabel', { "foreground" => "red" })

@@ -20,6 +20,7 @@ module Glimmer_Tk_WidgetProxy_Override
     end
   end
 
+  # TODO: implement also OnRedirectedEventExpression?
   def on_redirected_event(event_name, &block)
     on(event_name) { |event|
       block.call(event)
@@ -27,6 +28,7 @@ module Glimmer_Tk_WidgetProxy_Override
     }
   end
 
+  # TODO: implement also RaiseEventExpression?
   def raise_event(event_name, data = nil)
     tk.event_generate("<#{event_name}>", data: (data.is_a?(Hash) ? data.to_yaml : data))
   end
@@ -43,18 +45,59 @@ module Glimmer_Tk_WidgetProxy_Override
         TkGrid.columnconfigure(griddable_parent_proxy.tk, index_in_parent, 'uniform' => column_uniform)
       end
     end
+    @_visible = true
+    super
+  end
+
+  def visible
+    instance_variable_defined?(:@_visible) ? @_visible : (@_visible = true)
+  end
+
+  def visible=(value)
+    value = !!value
+    return if visible == value
+
+    if value
+      grid column_weight: @_visible__column_weight, row_weight: @_visible__row_weight
+    else
+      index_in_parent = griddable_parent_proxy&.children&.index(griddable_proxy)
+      @_visible__column_weight = TkGrid.columnconfiginfo(griddable_parent_proxy.tk, index_in_parent)['weight'] || 0
+      @_visible__row_weight    = TkGrid.rowconfiginfo(griddable_parent_proxy.tk, index_in_parent)['weight']    || 0
+      grid column_weight: 0, row_weight: 0
+      tk.grid_remove
+    end
+    @_visible = value
+  end
+
+  def style=(style_name_or_styles)
+    if style_name_or_styles.is_a? String
+      @tk.style(style_name_or_styles)
+    else
+      super
+    end
+  end
+
+  def destroy
+    children.each(&:destroy)
     super
   end
 
   def unbind_all
-    # TODO: find another way to verify the Glimmer implementation
-    # unless @listeners
-    #   handle_listener('<FakeEvent>') {}
-    #   raise RuntimeError, "Can't find @listeners variable - changes in the Glimmer implementation?" unless @listeners
-    # end
-
-    super
+    @listeners&.keys&.each do |key|
+      if key.to_s.downcase.include?('command')
+        @tk.send(key, '')
+      else
+        @tk.bind_remove(key)
+      end
+    end
     @listeners = nil
+  end
+
+  def clear!
+    # TODO: again, any way to verify the Glimmer implementation?
+    unbind_all
+    children.each(&:destroy)
+    @children = []
   end
 
   ::Glimmer::Tk::WidgetProxy.prepend self

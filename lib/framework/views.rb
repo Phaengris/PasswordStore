@@ -24,7 +24,7 @@ module Views
   end
 
   def self.method_missing(name, *args, &block)
-    Framework::ViewSelector.new.send(name, *args, &block)
+    Framework::ViewsBrowser.new.send(name, *args, &block)
   end
 
 end

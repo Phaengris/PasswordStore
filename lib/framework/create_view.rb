@@ -24,21 +24,25 @@ class Framework::CreateView
         view_model_class_name.safe_constantize&.new
       end
 
-    view_model_name = File.basename(view_path)
-    template_content = File.read(view_abs_path)
-
-    CreateContainer
-      .new(_container_type: container_type,
-           _template_content: template_content,
-           _view_model_name: view_model_name,
-           _view_model_instance: view_model_instance,
-           _header_block: block,
-           _body_block: (Framework::Dev::Scene.scenario_for(view_path) if Framework::Dev::Scene.watched?))
-      .instance_variable_get(:@_container)
-      .tap { |container|
-        Framework::Dev::Scene.patch_glimmer_container(container) if Framework::Dev::Scene.watched?
-        ViewsBacktrace.pop
-      }
+    container = CreateContainer.call(container_type, block)
+    begin
+      Framework::RenderView.call(_container: container,
+                                 _view_path: view_path,
+                                 _view_model_instance: view_model_instance)
+    rescue Framework::RenderView::ErrorInTemplate => e
+      if Framework::Dev::Scene.watched?
+        Framework::Dev::Scene.show_render_error(e)
+      else
+        # TODO: Framework.exit(by_exception: e)
+        raise
+      end
+    else
+      container.define_instance_reader(:view_model, view_model_instance)
+      Framework::Dev::Scene.patch_glimmer_container(container) if Framework::Dev::Scene.watched?
+    ensure
+      ViewsBacktrace.pop
+    end
+    container
   end
 
   private
@@ -69,16 +73,14 @@ class Framework::CreateView
 
   class CreateContainer
     include Glimmer
+    include Callable
 
-    def initialize(_container_type:, _template_content:, _view_model_name:, _view_model_instance: nil,
-                   _header_block: nil, _body_block: nil)
-      define_instance_reader :view_model, _view_model_instance
-      define_instance_reader _view_model_name, _view_model_instance
+    init_with_attributes :_container_type, :_header_block
 
+    def call
       if _container_type == :toplevel && !ViewsBacktrace.from_main_window?
         Views.MainWindow.content do
           @_container = send(_container_type) {
-            define_instance_reader :view, self
             define_instance_reader :widget, self
 
             instance_exec(&_header_block) if _header_block
@@ -87,19 +89,13 @@ class Framework::CreateView
 
       else
         @_container = send(_container_type) {
-          define_instance_reader :view, self
           define_instance_reader :widget, self
 
           instance_exec(&_header_block) if _header_block
         }
       end
-
-      Framework::TemplateEvaluator.new(_container: @_container,
-                                       _template_content: _template_content,
-                                       _view_model_name: _view_model_name,
-                                       _view_model_instance: _view_model_instance,
-                                       _body_block: _body_block)
     end
+    @_container
   end
 
 end

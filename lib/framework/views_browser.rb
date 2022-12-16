@@ -1,4 +1,4 @@
-class Framework::ViewSelector
+class Framework::ViewsBrowser
   init_with_attributes :path
 
   def method_missing(name, *args, &block)

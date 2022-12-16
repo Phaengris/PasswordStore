@@ -1,6 +1,7 @@
 module Glimmer_Tk_ToplevelProxy_Override
 
   def modal
+    center_within_root
     root_parent_proxy.withdraw
     tk.grab_set
     on('WM_DELETE_WINDOW') do

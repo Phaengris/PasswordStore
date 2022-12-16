@@ -10,7 +10,7 @@ module ActiveFile::Utils
         case part
         when '', '.' then next
         when '..'
-          raise PathOutsideOfRoot, "Path leads outside of root: #{path.pretty_print_inspect}" if clean_path.empty?
+          raise PathOutsideOfRoot, "Path leads outside of root: #{dirty_path.pretty_print_inspect}" if clean_path.empty?
           clean_path.pop
         else
           clean_path << part

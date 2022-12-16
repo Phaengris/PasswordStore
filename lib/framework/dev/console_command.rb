@@ -6,9 +6,10 @@ class Framework::Dev::ConsoleCommand
   usage do
     no_command
     desc "Run application in \"console\" mode"
-    example "console"
-    example "console \"Views.MainWindow.open\""
-    example "echo \"Views.MainWindow.open\" | console"
+    example "console\n  (starts interactive mode)"
+    example "console \"Views.MainWindow.open\"\n  (opens the application's main window)"
+    example "echo \"Views.MainWindow.open\" | console\n  (does the same as above)"
+    example "A simple keyboard event catcher:\n  console \"include Glimmer; root { on(\\\"KeyPress\\\") { |e| pp e } }.open\""
   end
 
   argument :script do

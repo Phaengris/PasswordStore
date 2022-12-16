@@ -37,12 +37,26 @@ class ActiveFile::Base
       end
     end
 
-    def select(path, options = {})
+    def where(path, options = {})
       ActiveFile::Selector.new(self, path, options)
     end
 
     def all
-      select('**/*', only: :entities)
+      where('**/*', only: :entities)
+    end
+
+    def find(path)
+      where(ActiveFile::Utils.clean_path(path)).first # TODO: raise exception if not found?
+    end
+
+    def entity?(path)
+      File.file?("#{root_path}/#{ActiveFile::Utils.clean_path(path)}")
+      # true
+    end
+
+    def collection?(path)
+      File.directory?("#{root_path}/#{ActiveFile::Utils.clean_path(path)}")
+      # false
     end
   end
 
@@ -54,20 +68,28 @@ class ActiveFile::Base
     @format = self.class.format.new(self)
   end
 
-  def name
+  memoize def name
     File.basename(path, File.extname(path))
   end
 
-  def dir
+  memoize def collection
     File.dirname(path)
   end
 
-  def full_name
-    path.delete_suffix(File.extname(path))
+  # def full_name
+  #   path.delete_suffix(File.extname(path))
+  # end
+
+  memoize def full_path
+    "#{self.class.root_path}/#{path}"
   end
 
-  def full_path
-    @_full_path ||= "#{self.class.root_path}/#{path}"
+  def entity?
+    true
+  end
+
+  def collection?
+    false
   end
 
 end

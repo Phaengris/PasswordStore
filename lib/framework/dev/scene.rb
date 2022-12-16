@@ -2,6 +2,7 @@ require 'listen'
 
 class Framework::Dev::Scene
   include SingletonWithInstanceMethods
+  include Glimmer
 
   class SceneNotFound < StandardError; end
   class SceneNotWatched < StandardError;
@@ -75,6 +76,36 @@ class Framework::Dev::Scene
     end
   end
 
+  def show_render_error(error)
+    main_window = error.container.is_a?(Glimmer::Tk::RootProxy) ? error.container : Views.MainWindow
+    main_window.clear!
+    main_window.tk.deiconify
+    main_window.content do
+      # make sure the message is visible
+      width 1000
+      height 500
+
+      l = nil
+      frame {
+        padding 15
+        grid row: 0, column: 0, row_weight: 1, column_weight: 1
+        l = label {
+          grid row: 0, column: 0, row_weight: 1, column_weight: 1, sticky: 'nw'
+          wraplength main_window.width - 30
+          text error.message
+        }
+      }
+
+      on('Configure') do |event|
+        if event.widget.is_a?(::Tk::Root) && l.tk.wraplength != event.width - 30
+          l.tk.wraplength = event.width - 30
+        end
+      end
+    end
+    main_window.center_within_screen
+    patch_glimmer_container(main_window)
+  end
+
   private
 
   def start_app_files_listener
@@ -119,28 +150,24 @@ class Framework::Dev::Scene
   end
 
   def reload_main_window
-    # Views.MainWindow.children.each do |child|
-    #   child.tk.grid_forget
-    #   child.tk.pack_forget
-    #   child.destroy
-    # end
-    Views.MainWindow.children.each(&:destroy)
-    Views.MainWindow.instance_variable_set(:@children, [])
-    Views.MainWindow.unbind_all
+    Views.MainWindow.clear!
 
-    template_path = Framework.path('app/views/main_window.glimmer.rb')
-    raise Views::MainWindowTemplateNotFoundError unless File.exist?(template_path)
+    view_abs_path = Framework.path('app/views/main_window.glimmer.rb')
+    raise Views::MainWindowTemplateNotFoundError unless File.exist?(view_abs_path)
 
     view_model_path = Framework.path('app/views/main_window.rb')
     view_model_instance = ViewModels::MainWindow.new if File.exist?(view_model_path)
 
-    Framework::TemplateEvaluator.new(_container: Views.MainWindow,
-                                     _template_content: File.read(template_path),
-                                     _view_model_name: 'main_window',
-                                     _view_model_instance: view_model_instance,
-                                     _body_block: scenario_for('main_window'))
-
-    patch_glimmer_container(Views.MainWindow)
+    begin
+      Framework::RenderView.call(_container: Views.MainWindow,
+                                 _view_path: 'main_window',
+                                 _view_model_instance: view_model_instance,
+                                 _body_block: scenario_for('main_window'))
+    rescue Framework::RenderView::ErrorInTemplate => e
+      show_render_error(e)
+    else
+      patch_glimmer_container(Views.MainWindow)
+    end
   end
 
   class SceneEvaluator

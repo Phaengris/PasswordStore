@@ -147,7 +147,7 @@ module Glimmer_Tk_TreeviewProxy_Override
       if item.is_a?(Hash)
         tk_node = tk_root.children.find { |child| child.text == item.keys.first }
         if tk_node
-          found_tk_elements += find_tk_elements_for_items(tk_node, item.values)
+          found_tk_elements += find_tk_elements_for_items(tk_node, item.values.first)
         end
 
       else
