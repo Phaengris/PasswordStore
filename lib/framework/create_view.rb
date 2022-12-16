@@ -28,7 +28,8 @@ class Framework::CreateView
     begin
       Framework::RenderView.call(_container: container,
                                  _view_path: view_path,
-                                 _view_model_instance: view_model_instance)
+                                 _view_model_instance: view_model_instance,
+                                 _body_block: (Framework::Dev::Scene.scenario_for(view_path) if Framework::Dev::Scene.watched?))
     rescue Framework::RenderView::ErrorInTemplate => e
       if Framework::Dev::Scene.watched?
         Framework::Dev::Scene.show_render_error(e)
