@@ -15,4 +15,8 @@ class Sequence
     yield self.next
   end
 
+  def count
+    @index || 0
+  end
+
 end

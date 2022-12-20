@@ -31,6 +31,25 @@ class Object
       end
     end
 
+    def on_attr_write(attr, &block)
+      # puts "on_attr_write attr = #{attr} instance methods = #{instance_methods(false).inspect}"
+      unless instance_methods(false).include?("#{attr}=".to_sym)
+        raise ArgumentError,
+              "Writer for attr `#{attr}` is not defined. Use `attr_writer :#{attr}` or `attr_accessor :#{attr}` to define it."
+      end
+      if instance_methods(false).include?("#{attr}_value=".to_sym)
+        raise ArgumentError,
+              "`on_attr_write` handler for attr `#{attr}` is already defined. Multiple handlers aren't supported at the moment."
+      end
+
+      alias_method "#{attr}_value=", "#{attr}="
+
+      define_method "#{attr}=" do |value|
+        previous_value = send(attr) if respond_to?(attr)
+        send("#{attr}_value=", value)
+        instance_exec(value, previous_value, &block)
+      end
+    end
   end
 
   def define_instance_reader(name, value)

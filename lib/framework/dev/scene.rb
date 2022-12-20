@@ -34,6 +34,8 @@ class Framework::Dev::Scene
   end
 
   def changed?
+    raise SceneNotWatched unless watched?
+
     app_files_changed
   end
 
@@ -77,13 +79,17 @@ class Framework::Dev::Scene
   end
 
   def show_render_error(error)
-    main_window = error.container.is_a?(Glimmer::Tk::RootProxy) ? error.container : Views.MainWindow
+    raise SceneNotWatched unless watched?
+
+    # TODO: using Views.MainWindow here causes an infinite loop - investigate why
+    main_window = error.container.root_parent_proxy
     main_window.clear!
     main_window.tk.deiconify
     main_window.content do
       # make sure the message is visible
-      width 1000
-      height 500
+      width 1024
+      height 1024 / 1.618 # why not? :)
+      escapable true
 
       l = nil
       frame {

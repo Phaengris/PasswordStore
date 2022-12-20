@@ -12,10 +12,12 @@ module Glimmer_Tk_WidgetProxy_Override
                             "Use `on_redirected_event` or break false` to prevent that."
       end
 
-      @redirected_events[event_name] ||= []
-      @redirected_events[event_name] << target.tk
+      widget = target.is_a?(Proc) ? target.call(event) : target
 
-      target.raise_event(event_name, event.detail)
+      @redirected_events[event_name] ||= []
+      @redirected_events[event_name] << widget.tk
+
+      widget.raise_event(event_name, event.detail)
       break false
     end
   end
@@ -49,24 +51,56 @@ module Glimmer_Tk_WidgetProxy_Override
     super
   end
 
+  # TODO: decide which one - `visible` or `hidden` - is more convenient to use (or just keep both?)
+
   def visible
     instance_variable_defined?(:@_visible) ? @_visible : (@_visible = true)
   end
+  alias_method :visible?, :visible
 
   def visible=(value)
+    puts "setting visible to = #{value.inspect} for #{self.inspect}"
     value = !!value
     return if visible == value
 
     if value
-      grid column_weight: @_visible__column_weight, row_weight: @_visible__row_weight
+      # grid column_weight: @_visible__column_weight, row_weight: @_visible__row_weight
+      grid
     else
-      index_in_parent = griddable_parent_proxy&.children&.index(griddable_proxy)
-      @_visible__column_weight = TkGrid.columnconfiginfo(griddable_parent_proxy.tk, index_in_parent)['weight'] || 0
-      @_visible__row_weight    = TkGrid.rowconfiginfo(griddable_parent_proxy.tk, index_in_parent)['weight']    || 0
-      grid column_weight: 0, row_weight: 0
+      # index_in_parent = griddable_parent_proxy&.children&.index(griddable_proxy)
+      # @_visible__column_weight = TkGrid.columnconfiginfo(griddable_parent_proxy.tk, index_in_parent)['weight']
+      # @_visible__row_weight    = TkGrid.rowconfiginfo(griddable_parent_proxy.tk, index_in_parent)['weight']
+      # grid column_weight: 0, row_weight: 0
       tk.grid_remove
     end
     @_visible = value
+  end
+
+  def hidden
+    !visible
+  end
+  alias_method :hidden?, :hidden
+
+  def hidden=(value)
+    self.visible = !value
+  end
+
+  # TODO: decide which one - `enabled` or `disabled` - is more convenient to use (or just keep both?)
+
+  def enabled
+    tk.state == 'enabled'
+  end
+
+  def enabled=(value)
+    tk.state = value ? 'enabled' : 'disabled'
+  end
+
+  def disabled
+    !enabled
+  end
+
+  def disabled=(value)
+    self.enabled = !value
   end
 
   def style=(style_name_or_styles)
@@ -94,7 +128,6 @@ module Glimmer_Tk_WidgetProxy_Override
   end
 
   def clear!
-    # TODO: again, any way to verify the Glimmer implementation?
     unbind_all
     children.each(&:destroy)
     @children = []

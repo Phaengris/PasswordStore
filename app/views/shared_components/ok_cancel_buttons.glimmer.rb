@@ -1,4 +1,4 @@
-grid row_weight: 1
+# grid row_weight: 1
 frame { grid row: 0, pady: [0, 15] }
 button {
   grid row: 1, column: 0, row_weight: 1, sticky: 'se', padx: [0, 5]

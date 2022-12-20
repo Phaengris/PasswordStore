@@ -1,19 +1,30 @@
+require 'clipboard'
+
 class ViewModels::MainWindowComponents::AccountView
   attr_accessor :account_path
-  attr_accessor :copy_password_to_clipboard_message
 
   attr_internal_accessor :account
 
-  alias_method :account_path_attr=, :account_path=
-  def account_path=(path)
-    self.account = Account.find(path)
-    self.account = nil unless self.account.entity?
-    self.account_path_attr = path
+  on_attr_write(:account_path) do |value|
+    puts "AccountView <= account_path = #{value}"
+    self.account = Account.where(value).only(:entities).first if value.present?
   end
 
-  delegate :name,
-           :collection,
-           :copy_password_to_clipboard,
+  delegate :entity_name,
+           :collection_name,
            to: :account,
            allow_nil: true
+
+  def copy_domain_name_to_clipboard
+    Clipboard.copy account.collection_name
+  end
+
+  def copy_account_name_to_clipboard
+    Clipboard.copy account.entity_name
+  end
+
+  def copy_password_to_clipboard
+    account.password_store.copy_password_to_clipboard
+  end
+
 end

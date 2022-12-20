@@ -25,23 +25,25 @@ class Framework::CreateView
       end
 
     container = CreateContainer.call(container_type, block)
+    puts "Framework::CreateView path = #{view_path} type = #{container_type} container = #{container.inspect}"
     begin
       Framework::RenderView.call(_container: container,
                                  _view_path: view_path,
                                  _view_model_instance: view_model_instance,
                                  _body_block: (Framework::Dev::Scene.scenario_for(view_path) if Framework::Dev::Scene.watched?))
     rescue Framework::RenderView::ErrorInTemplate => e
+      pp e
       if Framework::Dev::Scene.watched?
+        ViewsBacktrace.clear
         Framework::Dev::Scene.show_render_error(e)
       else
         # TODO: Framework.exit(by_exception: e)
         raise
       end
     else
+      ViewsBacktrace.pop
       container.define_instance_reader(:view_model, view_model_instance)
       Framework::Dev::Scene.patch_glimmer_container(container) if Framework::Dev::Scene.watched?
-    ensure
-      ViewsBacktrace.pop
     end
     container
   end
@@ -81,22 +83,26 @@ class Framework::CreateView
     def call
       if _container_type == :toplevel && !ViewsBacktrace.from_main_window?
         Views.MainWindow.content do
-          @_container = send(_container_type) {
+          @_container = toplevel {
             define_instance_reader :widget, self
 
-            instance_exec(&_header_block) if _header_block
+            # instance_exec(&_header_block) if _header_block
+            _header_block.call if _header_block
           }
+          puts "Framework::CreateView::CreateContainer toplevel #{@_container}"
         end
 
       else
         @_container = send(_container_type) {
           define_instance_reader :widget, self
 
-          instance_exec(&_header_block) if _header_block
+          # instance_exec(&_header_block) if _header_block
+          _header_block.call if _header_block
         }
       end
+      @_container
     end
-    @_container
+
   end
 
 end

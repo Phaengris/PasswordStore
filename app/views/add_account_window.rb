@@ -5,55 +5,31 @@ class ViewModels::AddAccountWindow
   attr_accessor :domain,
                 :account,
                 :password_generated,
-                :generate_password_state,
                 :generated_password_length,
                 :generated_password_alphanumerics_excluded,
                 :password,
                 :password_visible,
-                :password_hide_char,
-                :password_focus,
                 :password_confirmation,
-                :password_confirmation_visible,
-                :password_entries_state,
+                :notes,
                 :errors
 
   def initialize
-    self.errors = OpenStruct.new(domain: nil, account: nil, password: nil, password_confirmation: nil)
+    self.errors = Framework::ViewModels::Errors.new(%i[domain account password password_confirmation])
 
     self.password_generated = true
-    self.generate_password_state = 'enabled'
     self.generated_password_length = 16
     self.generated_password_alphanumerics_excluded = false
     self.password_visible = false
-    self.password_entries_state = 'disabled'
   end
 
-  alias_method :password_generated_attr=, :password_generated=
-  def password_generated=(value)
-    if value
-      self.generate_password_state = 'enabled'
-      self.password_entries_state = 'disabled'
-      self.errors.password = nil
-      self.errors.password_confirmation = nil
-    else
-      self.generate_password_state = 'disabled'
-      self.password_entries_state = 'enabled'
-      self.password_focus = true
-    end
-    self.password_generated_attr = value
+  def action
+    validate
+    return unless errors.none?
+
+    Account.new(Pathname.new(domain).join("#{account}.gpg"))
   end
 
-  alias_method :password_visible_attr=, :password_visible=
-  def password_visible=(value)
-    if value
-      self.password_hide_char = nil
-      self.password_confirmation_visible = false
-    else
-      self.password_hide_char = '*'
-      self.password_confirmation_visible = true
-    end
-    self.password_visible_attr = value
-  end
+  private
 
   def validate
     values = { account: account, password_generated: password_generated }
@@ -63,14 +39,10 @@ class ViewModels::AddAccountWindow
       values[:password_visible] = password_visible
       values[:password_confirmation] = password_confirmation if password_visible
     end
-    errors = AccountFormContract.new.call(values).errors.to_h
-    self.errors.account               = errors[:account]&.to_sentence&.capitalize
-    self.errors.domain                = errors[:domain]&.to_sentence&.capitalize
-    self.errors.password              = errors[:password]&.to_sentence&.capitalize
-    self.errors.password_confirmation = errors[:password_confirmation]&.to_sentence&.capitalize
+    errors.consume_contract_errors Contract.new.call(values).errors
   end
 
-  class AccountFormContract < Dry::Validation::Contract
+  class Contract < Dry::Validation::Contract
     params do
       optional(:domain).filled(:string)
       required(:account).filled(:string)

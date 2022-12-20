@@ -1,46 +1,42 @@
-require 'forwardable'
-
-require_relative './selector'
+require_relative './collection'
 require_relative './format'
 require_relative './utils'
 
 class ActiveFile::Base
-  class DoubleInitializationError < StandardError; end
+  class NotInitialized < StandardError; end
+  class DoubleInitialization < StandardError; end
   class InvalidFormat < StandardError; end
-  class FormatterMethodConflict < StandardError; end
-
-  extend Forwardable
 
   class << self
-    attr_reader :root_path
-    attr_reader :format
-
     def root_path=(path)
-      raise DoubleInitializationError, "root_path is already initialized" if @root_path
+      raise DoubleInitialization, "root_path is already initialized as #{root_path}" if @root_path
 
-      @root_path = path
+      @root_path = Pathname.new(path)
     end
 
-    def format=(format)
-      raise DoubleInitializationError, "format is already initialized" if @format
+    def root_path
+      @root_path ||
+        (raise NotInitialized, 'Use `self.root_path =` in your ActiveFile::Base < class to define the root path')
+    end
+
+    def add_format(format)
       unless format.is_a?(Class) && format.ancestors.include?(ActiveFile::Format)
-        raise InvalidFormat, "Expected an ActiveFile::Format < class, given #{format.pretty_inspect}"
+        raise InvalidFormat, "Expected an ActiveFile::Format < class, given #{format.inspect}"
       end
 
-      @format = format
-      @format.provided_methods.each do |format_method|
-        if instance_methods.include?(format_method)
-          raise FormatterMethodConflict, "Formatter method `#{format_method}` seems to be defined already in #{self.name}"
-        end
+      @formats ||= []
+      @formats << format
+    end
 
-        def_delegator :@format, format_method, format_method
-      end
+    def formats
+      (@formats ||= []).dup
     end
 
     def where(path, options = {})
-      ActiveFile::Selector.new(self, path, options)
+      ActiveFile::Collection.new(self, path, options)
     end
 
+    # TODO: or `all_entities`?
     def all
       where('**/*', only: :entities)
     end
@@ -51,37 +47,38 @@ class ActiveFile::Base
 
     def entity?(path)
       File.file?("#{root_path}/#{ActiveFile::Utils.clean_path(path)}")
-      # true
     end
 
     def collection?(path)
       File.directory?("#{root_path}/#{ActiveFile::Utils.clean_path(path)}")
-      # false
     end
   end
 
-  attr_reader :path
-  attr_internal_reader :format
+  attr_accessor :path
+  private :path=
 
   def initialize(path)
-    @path = ActiveFile::Utils.clean_path(path)
-    @format = self.class.format.new(self)
+    self.path = ActiveFile::Utils.clean_path(path)
+    self.class.formats.each do |format_class|
+      # TODO: method name conflict?
+      define_instance_reader(format_class.to_s.demodulize.underscore, format_class.new(self))
+    end
   end
 
-  memoize def name
+  memoize def entity_name
     File.basename(path, File.extname(path))
   end
 
-  memoize def collection
+  memoize def collection_path
     File.dirname(path)
   end
 
-  # def full_name
-  #   path.delete_suffix(File.extname(path))
-  # end
+  memoize def collection_name
+    File.basename(File.dirname(path))
+  end
 
-  memoize def full_path
-    "#{self.class.root_path}/#{path}"
+  memoize def abs_path
+    self.class.root_path.join(path)
   end
 
   def entity?
@@ -90,6 +87,11 @@ class ActiveFile::Base
 
   def collection?
     false
+  end
+
+  def content
+    # TODO: raise a custom exception or just rely on FileNotFound?
+    File.read(abs_path)
   end
 
 end

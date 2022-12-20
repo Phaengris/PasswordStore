@@ -2,10 +2,10 @@
   grid row_weight: 1
   selectmode :browse
   selection <=> [accounts_list, :selection, computed_by: :search_string]
-  expanded <= [accounts_list, :all_accounts_shown]
+  expanded <= [accounts_list, :search_string]
   on('TreeviewSelect') { |event|
     # puts "accounts_list TreeviewSelect #{accounts_list.selection.pretty_inspect}"
-    widget.raise_event('AccountsListSelect')
+    widget.raise_event('AccountsListSelect', accounts_list.selection_path)
   }
 }
 

@@ -17,7 +17,7 @@ class ActiveFile::Format
   end
 
   def content
-    File.read(entity.full_path)
+    File.read(entity.abs_path)
   end
 
 end

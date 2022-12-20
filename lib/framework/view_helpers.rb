@@ -1,5 +1,5 @@
 module Framework::ViewHelpers
-  # TODO: but didn't we already do it in lib/core/object.rb?
+  # TODO: but didn't we already include it into lib/core/object.rb?
   include Memoized
 
   class PlacementConflict < StandardError; end

@@ -26,6 +26,7 @@ class Framework::RenderView
     Dir.glob(Framework.path('app/views')
                       .join("#{_view_path}_components/_*.glimmer.rb")).each do |component_abs_path|
       component_method_name = File.basename(component_abs_path, '.glimmer.rb').delete_prefix('_')
+      # TODO: catch errors, replace "eval" with component_abs_path
       eval "define_singleton_method :#{component_method_name} do\n#{File.read(component_abs_path)}\nend"
     end
 
@@ -37,7 +38,7 @@ class Framework::RenderView
         instance_exec(&_body_block) if _body_block
       end
 
-    rescue StandardError, SyntaxError => e
+    rescue StandardError, SyntaxError, NoMethodError => e
       # (eval):8:in `block in initialize'
       line_before_eval = e.backtrace.find_index { |line| line.include?(__FILE__) }
       error_message = if line_before_eval.nil?
@@ -51,6 +52,7 @@ class Framework::RenderView
                         end
                       end
       puts error_message
+      e.backtrace.each { |line| puts "  #{line}" }
       raise ErrorInTemplate.new(error_message, _container)
     else
       puts "Rendered #{_view_abs_path}"

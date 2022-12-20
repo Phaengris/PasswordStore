@@ -3,32 +3,24 @@ class ViewModels::MainWindowComponents::AccountsList
     ('a'..'z').to_a +
       [' '] +
       %w(` ~ ! @ # $ % ^ & * ( ) - _ = + [ { ] } \ | ; : ' " , < . > / ?)
-  ).freeze
+  ).map(&:freeze).freeze
 
   attr_accessor :search_string
   attr_accessor :selection
   attr_accessor :selection_options
   attr_accessor :selection_path
-  attr_accessor :all_accounts_shown
+  attr_accessor :selection_is_account
+  alias_method :selection_is_account?, :selection_is_account
 
-  # private :search_string
-  # private :selected_account_options=
   private :selection_path=
 
   def initialize
     self.search_string = ''
   end
 
-  alias_method :selection_attr=, :selection=
-  def selection=(branch)
-    self.selection_path = build_path_from_branch(branch)
-    self.selection_attr = branch
-  end
-
-  def search_string=(str)
-    @search_string = str
-
-    entities_list = if search_string.strip.present?
+  on_attr_write(:search_string) do |value, previous_value|
+    pp "AccountsList on_attr_write search_string self = #{self.inspect}"
+    entities_list = if value.strip.present?
                       Account
                         .where("**/#{search_mask}.gpg")
                         .or("**/#{search_mask}/*.gpg")
@@ -39,15 +31,18 @@ class ViewModels::MainWindowComponents::AccountsList
                     end
 
     self.selection_options = build_tree_from_paths(entities_list)
-
-    # if selected_account && tree_include_tree?(selected_account_options, selected_account)
-    #   self.selected_account = selected_account # just reload
-    # else
-    #   self.selected_account = locate_match_in_tree(selected_account_options, search_regexp) || []
-    # end
     self.selection = locate_match_in_tree(selection_options, search_regexp) || []
+  end
 
-    self.all_accounts_shown = search_string.strip.present?
+  on_attr_write(:selection) do |value, previous_value|
+    self.selection_path = build_path_from_branch(value)
+    self.selection_is_account = Account.entity?(build_path_from_branch(value))
+  end
+
+  alias_method :selection_is_account_value, :selection_is_account
+  def selection_is_account
+    puts "AccountsList selection_is_account = #{selection_is_account_value.inspect}"
+    selection_is_account_value
   end
 
   # def select_prev
@@ -78,16 +73,6 @@ class ViewModels::MainWindowComponents::AccountsList
   #     self.search_string += event.char
   #   end
   # end
-
-  def selection_is_account?
-    Account.entity?(selection_path)
-  end
-  alias_method :account_selected?, :selection_is_account?
-
-  def selection_is_domain?
-    Account.collection?(selection_path)
-  end
-  alias_method :domain_selected?, :selection_is_domain?
 
   private
 
