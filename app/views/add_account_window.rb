@@ -13,8 +13,10 @@ class ViewModels::AddAccountWindow
                 :notes,
                 :errors
 
+  alias_method :password_generated?, :password_generated
+
   def initialize
-    self.errors = Framework::ViewModels::Errors.new(%i[domain account password password_confirmation])
+    self.errors = Framework::ViewModelErrors.new(%i[domain account password password_confirmation])
 
     self.password_generated = true
     self.generated_password_length = 16
@@ -26,7 +28,18 @@ class ViewModels::AddAccountWindow
     validate
     return unless errors.none?
 
-    Account.new(Pathname.new(domain).join("#{account}.gpg"))
+    account_file = Account.new(account_path)
+    if password_generated?
+      account_file.password_store.generate_password(length: generated_password_length,
+                                               no_symbols: generated_password_alphanumerics_excluded)
+    else
+      account_file.password_store.write_password(password)
+    end
+  end
+
+  # TODO: memoize?
+  def account_path
+    Pathname.new(domain).join("#{account}.gpg")
   end
 
   private
@@ -37,9 +50,11 @@ class ViewModels::AddAccountWindow
     unless password_generated
       values[:password] = password
       values[:password_visible] = password_visible
-      values[:password_confirmation] = password_confirmation if password_visible
+      values[:password_confirmation] = password_confirmation unless password_visible
     end
     errors.consume_contract_errors Contract.new.call(values).errors
+    # errors << Contract.new.call(values).errors
+    # errors.call_contract(Contract, values)
   end
 
   class Contract < Dry::Validation::Contract

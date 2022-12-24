@@ -10,9 +10,9 @@ rows.with_next { |row|
   }
 }
 
-# label {
-#   grid row: rows.next, column: 1
-#   visible <= [add_account_window.errors, :domain]
-#   style 'Alert.TLabel'
-#   text <= [add_account_window.errors, :domain]
-# }
+label {
+  grid row: rows.next, column: 1
+  visible <= [add_account_window.errors, :domain]
+  style 'Alert.TLabel'
+  text <= [add_account_window.errors, :domain]
+}

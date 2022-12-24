@@ -35,4 +35,6 @@ Tk.tk_call('source', Framework.path('app/assets/tk/forest/forest-light.tcl'))
 Tk.tk_call('source', Framework.path('app/assets/tk/forest/forest-dark.tcl'))
 Tk::Tile::Style.theme_use "forest-light"
 
-Tk::Tile::Style.configure('Alert.TLabel', { "foreground" => "red" })
+Tk::Tile::Style.configure('Alert.TLabel', { "foreground" => "#FF3860" })
+Tk::Tile::Style.configure('FlashAlert.TFrame', { "background" => "#FF3860" })
+Tk::Tile::Style.configure('FlashAlert.TLabel', { "background" => "#FF3860", foreground: "#FFFFFF" })

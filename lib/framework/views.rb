@@ -13,7 +13,6 @@ module Views
                        end
                        Framework::CreateView.call(Pathname.new('main_window'))
                      end
-    puts "Views.MainWindow #{@main_window.inspect}"
     @main_window
   end
 

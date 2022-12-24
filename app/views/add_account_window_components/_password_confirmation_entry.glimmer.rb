@@ -15,9 +15,9 @@ rows.with_next { |row|
   }
 }
 
-# label {
-#   grid row: rows.next, column: 1
-#   style 'Alert.TLabel'
-#   visible <= [add_account_window.errors, :password_confirmation]
-#   text <= [add_account_window.errors, :password_confirmation]
-# }
+label {
+  grid row: rows.next, column: 1
+  style 'Alert.TLabel'
+  visible <= [add_account_window.errors, :password_confirmation]
+  text <= [add_account_window.errors, :password_confirmation]
+}

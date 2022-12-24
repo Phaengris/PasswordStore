@@ -2,8 +2,12 @@ title 'Add account'
 widget.modal
 escapable true
 
+@flash = Views.shared_components.flash_message {
+  grid row: 0
+}
+
 frame {
-  grid row: 0, row_weight: 1
+  grid row: 1, row_weight: 1
   # TODO: scrolled frame doesn't adapt to it's parent width due to Tk specifics. Can we do something with it?
   # TODO: also it doesn't respond to scroll mouse events on the frame itself, only on the scrollbars
   # scrollbar_frame {
@@ -26,7 +30,7 @@ frame {
 }
 
 Views.shared_components.ok_cancel_buttons {
-  grid row: 1, row_weight: 0
+  grid row: 2, row_weight: 0
 }
 
 on('KeyPress') { |event|
@@ -36,5 +40,14 @@ on('KeyPress') { |event|
 }
 
 on('Action') { |event|
-  add_account_window.action
+  begin
+    add_account_window.action
+  rescue StandardError => e
+    @flash.view_model.alert "Sorry, failed to add account. Application reports:\n#{e.class}: #{e}"
+  else
+    break if add_account_window.errors.any?
+    # TODO: should we wipe password / password_confirmation entry values?
+    widget.raise_event 'AccountAdd', add_account_window.account_path
+    widget.destroy
+  end
 }

@@ -29,7 +29,6 @@ frame {
 }
 
 widget.on_redirected_event('AccountsListSelect') { |event|
-  # puts "domain_view AccountsListSelect #{event.detail}"
   domain_view.domain_path = event.detail
 }
 on('CopyDomainNameRequest')  { domain_view.copy_domain_name_to_clipboard }

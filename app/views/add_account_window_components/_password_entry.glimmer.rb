@@ -3,6 +3,7 @@ rows.with_next { |row|
     grid row: row, column: 0, sticky: 'e', padx: [0, 5]
     font :caption
     text 'Password'
+    # puts "_password_entry [add_account_window, :password_generated] = #{add_account_window.password_generated.to_s}"
     disabled <= [add_account_window, :password_generated]
   }
   entry {
@@ -13,9 +14,9 @@ rows.with_next { |row|
   }
 }
 
-# label {
-#   grid row: rows.next, column: 1
-#   style 'Alert.TLabel'
-#   visible <= [add_account_window.errors, :password]
-#   text <= [add_account_window.errors, :password]
-# }
+label {
+  grid row: rows.next, column: 1
+  style 'Alert.TLabel'
+  visible <= [add_account_window.errors, :password]
+  text <= [add_account_window.errors, :password]
+}

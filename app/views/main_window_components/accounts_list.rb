@@ -1,10 +1,4 @@
 class ViewModels::MainWindowComponents::AccountsList
-  TYPEABLE_CHARS = (
-    ('a'..'z').to_a +
-      [' '] +
-      %w(` ~ ! @ # $ % ^ & * ( ) - _ = + [ { ] } \ | ; : ' " , < . > / ?)
-  ).map(&:freeze).freeze
-
   attr_accessor :search_string
   attr_accessor :selection
   attr_accessor :selection_options
@@ -19,7 +13,6 @@ class ViewModels::MainWindowComponents::AccountsList
   end
 
   on_attr_write(:search_string) do |value, previous_value|
-    pp "AccountsList on_attr_write search_string self = #{self.inspect}"
     entities_list = if value.strip.present?
                       Account
                         .where("**/#{search_mask}.gpg")
@@ -39,40 +32,14 @@ class ViewModels::MainWindowComponents::AccountsList
     self.selection_is_account = Account.entity?(build_path_from_branch(value))
   end
 
+  # on_attr_write(:selection_path) do |value, previous_value|
+  #
+  # end
+
   alias_method :selection_is_account_value, :selection_is_account
   def selection_is_account
-    puts "AccountsList selection_is_account = #{selection_is_account_value.inspect}"
     selection_is_account_value
   end
-
-  # def select_prev
-  #   i = selected_account_options.find_index(selected_account)
-  #   if i.nil?
-  #     self.selected_account = selected_account_options.last
-  #   else
-  #     self.selected_account = selected_account_options[i - 1] if i > 0
-  #   end
-  # end
-  #
-  # def select_next
-  #   i = selected_account_options.find_index(selected_account)
-  #   if i.nil?
-  #     self.selected_account = selected_account_options.first
-  #   else
-  #     self.selected_account = selected_account_options[i + 1] if i < selected_account_options.count - 1
-  #   end
-  # end
-
-  # TODO: move to the toolbar
-  # def accounts_list_keypress(event)
-  #   case event.keysym
-  #   when 'Escape'
-  #     self.search_string = '' unless search_string.blank?
-  #   else
-  #     return unless TYPEABLE_CHARS.include?(event.char.downcase)
-  #     self.search_string += event.char
-  #   end
-  # end
 
   private
 
@@ -116,6 +83,21 @@ class ViewModels::MainWindowComponents::AccountsList
     path.join('/')
   end
 
+  def locate_match_in_tree(tree, regexp)
+    tree.each do |node|
+      if node.is_a?(Hash)
+        if node.keys.first.match?(regexp)
+          return [node.keys.first]
+        else
+          match = locate_match_in_tree(node.values.first, regexp)
+          return [{ node.keys.first => match }] if match
+        end
+      else
+        return [node] if node.match?(regexp)
+      end
+    end
+  end
+
   # def tree_include_tree?(big_tree, small_tree)
   #   small_tree.each do |node|
   #     if node.is_a?(Hash)
@@ -131,21 +113,6 @@ class ViewModels::MainWindowComponents::AccountsList
   #   end
   #   true
   # end
-
-  def locate_match_in_tree(tree, regexp)
-    tree.each do |node|
-      if node.is_a?(Hash)
-        if node.keys.first.match?(regexp)
-          return [node.keys.first]
-        else
-          match = locate_match_in_tree(node.values.first, regexp)
-          return [{ node.keys.first => match }] if match
-        end
-      else
-        return [node] if node.match?(regexp)
-      end
-    end
-  end
 
   # def tree_branch_reaches_leaf?(tree, branch)
   #   node = branch.first

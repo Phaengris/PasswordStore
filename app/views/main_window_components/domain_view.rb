@@ -8,7 +8,6 @@ class ViewModels::MainWindowComponents::DomainView
   delegate :name, to: :domain, allow_nil: true
 
   on_attr_write(:domain_path) do |value, previous_value|
-    puts "DomainView <= domain_path = #{value}"
     self.domain = Account.where(value).only(:collections).first if value.present?
   end
 

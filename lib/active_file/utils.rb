@@ -7,7 +7,7 @@ module ActiveFile::Utils
     # TODO: just use Pathname#expand_path or smth like that?
     def clean_path(dirty_path)
       clean_path = []
-      dirty_path.split('/').each do |part|
+      dirty_path.to_s.split('/').each do |part|
         case part
         when '', '.' then next
         when '..'

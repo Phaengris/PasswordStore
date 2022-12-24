@@ -32,7 +32,6 @@ class Object
     end
 
     def on_attr_write(attr, &block)
-      # puts "on_attr_write attr = #{attr} instance methods = #{instance_methods(false).inspect}"
       unless instance_methods(false).include?("#{attr}=".to_sym)
         raise ArgumentError,
               "Writer for attr `#{attr}` is not defined. Use `attr_writer :#{attr}` or `attr_accessor :#{attr}` to define it."
@@ -56,6 +55,17 @@ class Object
     define_singleton_method name do
       value
     end
+  end
+
+  def _debug(msg = nil, data = {})
+    # return unless Framework::Dev::Scene.watched?
+
+    puts <<-DEBUG.squish.strip
+      DEBUG:
+      #{self.class.to_s}#{self.is_a?(Class) ? '.' : '#'}#{Kernel.caller.first.match(/in `([^']+)'/)[1]}
+      #{msg}
+      #{data.map { |key, value| "#{key} = \"#{value.inspect}\""}.join(' ')}
+    DEBUG
   end
 
 end

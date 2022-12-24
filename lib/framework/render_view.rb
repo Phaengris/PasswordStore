@@ -51,11 +51,12 @@ class Framework::RenderView
                           "Failed to render a view: #{e.class} / #{e} in #{_view_abs_path} (can't detect line number)"
                         end
                       end
+      # TODO: how to show it better?
       puts error_message
       e.backtrace.each { |line| puts "  #{line}" }
       raise ErrorInTemplate.new(error_message, _container)
     else
-      puts "Rendered #{_view_abs_path}"
+      # puts "Rendered #{_view_abs_path}"
     end
   end
 

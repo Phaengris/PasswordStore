@@ -3,11 +3,6 @@ columns = Sequence.new
 @search = entry {
   grid row: 0, column: columns.next, row_weight: 1
   focus true
-  on('KeyPress') { |event| case event.keysym
-                           when 'Escape' then @search.text = ''
-                           when 'Up', 'Down' then widget.raise_event("SearchEntryKey#{event.keysym}")
-                           end }
-  # TODO: implement also RaiseEventExpression?
   on('Change') { |value| widget.raise_event('SearchStringChange', value.to_s) }
 }
 button {
@@ -28,4 +23,15 @@ button {
   width 0
   compound :center
   on('command') { widget.raise_event('DoSomething') }
+}
+
+widget.on_redirected_event('SearchStringFocusRequest') { |event|
+  @search.tk.set_focus
+}
+widget.on_redirected_event('SearchStringClearRequest') { |event|
+  if @search.text.blank?
+    Framework.exit
+  else
+    @search.text = ''
+  end
 }

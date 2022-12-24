@@ -8,18 +8,25 @@ class FileFormats::PasswordStore < ActiveFile::Format
   SYMBOLS = "`~!@\#$%^&*()-_=+[{]};:'\",<.>/?".freeze
 
   def write_password(password, notes: nil)
+    raise ArgumentError, "Password can't be blank" if password.to_s.strip.empty?
+    _debug(password: password, path: entity.abs_path)
+
     content = "#{password}\n#{"#{notes}\n" if notes.present?}"
+    err = nil
     begin
-      File.write(abs_path, GPGME::Crypto.new.encode(content, recipients: gpg_id))
+      File.write(entity.abs_path, GPGME::Crypto.new.encrypt(content, recipients: gpg_id))
+    rescue StandardError => e
+      err = e
     ensure
       wipe_string_variable(password)
       wipe_string_variable(notes)
       wipe_string_variable(content)
     end
+    raise err if err
     nil
   end
 
-  def autogenerate_password(length: 16, no_symbols: false, notes: nil)
+  def generate_password(length: 16, no_symbols: false, notes: nil)
     set = CHARACTERS.dup
     set += SYMBOLS unless no_symbols
     write_password(length.times.map { |_| set[rand(set.length)] }.join, notes: notes)
@@ -59,6 +66,8 @@ class FileFormats::PasswordStore < ActiveFile::Format
   end
 
   def wipe_string_variable(var)
+    return unless var
+
     var.length.times { |i| var[i] = "\0" }
     nil
   end
@@ -66,7 +75,7 @@ class FileFormats::PasswordStore < ActiveFile::Format
   def gpg_id
     raise PasswordStoreError, "#{gpg_id_path} not found" unless File.exist?(gpg_id_path)
 
-    File.read(gpg_id_path)
+    File.read(gpg_id_path).strip
   end
 
   memoize def gpg_id_path

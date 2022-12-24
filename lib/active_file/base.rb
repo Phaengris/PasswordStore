@@ -58,6 +58,7 @@ class ActiveFile::Base
   private :path=
 
   def initialize(path)
+    _debug(path: path)
     self.path = ActiveFile::Utils.clean_path(path)
     self.class.formats.each do |format_class|
       # TODO: method name conflict?

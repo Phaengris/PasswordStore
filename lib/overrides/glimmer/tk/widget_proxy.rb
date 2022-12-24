@@ -1,4 +1,5 @@
 module Glimmer_Tk_WidgetProxy_Override
+  # TODO: RedirectEventExpression?
   # due to some problem in Glimmer we can't make `to` a named argument
   # so it is a hash which expects only one key {to: <target>}
   def redirect_event(event_name, to = {})
@@ -22,7 +23,7 @@ module Glimmer_Tk_WidgetProxy_Override
     end
   end
 
-  # TODO: implement also OnRedirectedEventExpression?
+  # TODO: OnRedirectedEventExpression?
   def on_redirected_event(event_name, &block)
     on(event_name) { |event|
       block.call(event)
@@ -30,7 +31,7 @@ module Glimmer_Tk_WidgetProxy_Override
     }
   end
 
-  # TODO: implement also RaiseEventExpression?
+  # TODO: RaiseEventExpression?
   def raise_event(event_name, data = nil)
     tk.event_generate("<#{event_name}>", data: (data.is_a?(Hash) ? data.to_yaml : data))
   end
@@ -59,7 +60,6 @@ module Glimmer_Tk_WidgetProxy_Override
   alias_method :visible?, :visible
 
   def visible=(value)
-    puts "setting visible to = #{value.inspect} for #{self.inspect}"
     value = !!value
     return if visible == value
 
@@ -88,11 +88,12 @@ module Glimmer_Tk_WidgetProxy_Override
   # TODO: decide which one - `enabled` or `disabled` - is more convenient to use (or just keep both?)
 
   def enabled
-    tk.state == 'enabled'
+    # puts "#{self.inspect}.enabled tk.state = \"#{tk.state}\""
+    tk.state == 'normal'
   end
 
   def enabled=(value)
-    tk.state = value ? 'enabled' : 'disabled'
+    tk.state = value ? 'normal' : 'disabled'
   end
 
   def disabled
@@ -100,6 +101,7 @@ module Glimmer_Tk_WidgetProxy_Override
   end
 
   def disabled=(value)
+    # puts "#{self.inspect} disabled := #{value.to_s}"
     self.enabled = !value
   end
 
@@ -131,6 +133,12 @@ module Glimmer_Tk_WidgetProxy_Override
     unbind_all
     children.each(&:destroy)
     @children = []
+  end
+
+  # TODO: fix it in Glimmer
+  # https://github.com/AndyObtiva/glimmer-dsl-tk/blob/v0.0.62/lib/glimmer/tk/toplevel_proxy.rb#L43
+  def grab_release
+    @tk.grab_release
   end
 
   ::Glimmer::Tk::WidgetProxy.prepend self

@@ -6,7 +6,6 @@ class ViewModels::MainWindowComponents::AccountView
   attr_internal_accessor :account
 
   on_attr_write(:account_path) do |value|
-    puts "AccountView <= account_path = #{value}"
     self.account = Account.where(value).only(:entities).first if value.present?
   end
 

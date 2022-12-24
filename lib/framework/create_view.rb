@@ -25,14 +25,12 @@ class Framework::CreateView
       end
 
     container = CreateContainer.call(container_type, block)
-    puts "Framework::CreateView path = #{view_path} type = #{container_type} container = #{container.inspect}"
     begin
       Framework::RenderView.call(_container: container,
                                  _view_path: view_path,
                                  _view_model_instance: view_model_instance,
                                  _body_block: (Framework::Dev::Scene.scenario_for(view_path) if Framework::Dev::Scene.watched?))
     rescue Framework::RenderView::ErrorInTemplate => e
-      pp e
       if Framework::Dev::Scene.watched?
         ViewsBacktrace.clear
         Framework::Dev::Scene.show_render_error(e)
@@ -89,7 +87,6 @@ class Framework::CreateView
             # instance_exec(&_header_block) if _header_block
             _header_block.call if _header_block
           }
-          puts "Framework::CreateView::CreateContainer toplevel #{@_container}"
         end
 
       else

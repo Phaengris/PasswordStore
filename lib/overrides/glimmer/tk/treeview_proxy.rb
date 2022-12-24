@@ -1,5 +1,4 @@
 module Glimmer_Tk_TreeviewProxy_Override
-
   def widget_custom_attribute_mapping
     @widget_custom_attribute_mapping ||= {
       ::Tk::Tile::Treeview => {
@@ -22,11 +21,9 @@ module Glimmer_Tk_TreeviewProxy_Override
 
         'selection' => {
           getter: {name: 'selection', invoker: lambda { |widget, args|
-            # puts "selection get #{args.pretty_print_inspect}"
             build_items_tree_up(@tk.selection)
           }},
           setter: {name: 'selection=', invoker: lambda { |widget, args|
-            # puts "selection set #{args.pretty_print_inspect}"
             @tk.selection_set(find_tk_elements_for_items(@tk.root, args.first))
           }},
         },
@@ -36,7 +33,6 @@ module Glimmer_Tk_TreeviewProxy_Override
             expanded?
           }},
           setter: {name: 'expanded=', invoker: lambda { |widget, args|
-            # puts "expanded set #{args.pretty_inspect}"
             @expanded = !!args.first
             expand_recurse(@tk.root) if expanded?
           }},
@@ -55,6 +51,49 @@ module Glimmer_Tk_TreeviewProxy_Override
 
       },
     }
+  end
+
+  def select_next
+    # TODO: better exception class?
+    raise "Works only for single item selection mode" unless selectmode == 'browse'
+
+    sel = tk.selection
+    if (ch = tk.children(sel)).any?
+      tk.selection_set(ch.first)
+      true
+    elsif (nxt = tk.next_item(sel))
+      tk.selection_set(nxt)
+      true
+    else
+      par = tk.parent_item(sel)
+      while par && !par.is_a?(Tk::Tile::Treeview::Root) do
+        if (nxt = tk.next_item(par))
+          tk.selection_set(nxt)
+          return true
+        end
+        par = tk.parent_item(par)
+      end
+      false
+    end
+  end
+
+  def select_prev
+    # TODO: better exception class?
+    raise "Works only for single item selection mode" unless selectmode == 'browse'
+
+    sel = tk.selection.first
+    if (prv = tk.prev_item(sel))
+      while (ch = tk.children(prv)).any?
+        prv = ch.last
+      end
+      tk.selection_set(prv)
+      true
+    elsif (par = tk.parent_item(sel)) && !par.is_a?(Tk::Tile::Treeview::Root)
+      tk.selection_set(par)
+      true
+    else
+      false
+    end
   end
 
   private
