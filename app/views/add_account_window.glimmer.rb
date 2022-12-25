@@ -29,17 +29,21 @@ frame {
   # }
 }
 
-Views.shared_components.ok_cancel_buttons {
+@ok_cancel_buttons = Views.shared_components.ok_cancel_buttons {
   grid row: 2, row_weight: 0
 }
+# TODO: find a better way to pass private events
+@ok_cancel_buttons.on_action { widget.raise_action }
+@ok_cancel_buttons.on_cancel { widget.raise_cancel }
 
 on('KeyPress') { |event|
   case event.keysym
-  when 'Return' then widget.raise_event('Action')
+  when 'Return' then widget.raise_action
+  # when 'Escape' then widget.raise_cancel
   end
 }
 
-on('Action') { |event|
+widget.on_action {
   begin
     add_account_window.action
   rescue StandardError => e
@@ -47,7 +51,10 @@ on('Action') { |event|
   else
     break if add_account_window.errors.any?
     # TODO: should we wipe password / password_confirmation entry values?
-    widget.raise_event 'AccountAdd', add_account_window.account_path
+    Views.MainWindow.raise_event 'AccountsListReloadRequest'
     widget.destroy
   end
+}
+widget.on_cancel {
+  widget.destroy
 }

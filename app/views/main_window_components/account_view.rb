@@ -1,7 +1,8 @@
 require 'clipboard'
 
 class ViewModels::MainWindowComponents::AccountView
-  attr_accessor :account_path
+  attr_accessor :account_path,
+                :want_delete
 
   attr_internal_accessor :account
 
@@ -24,6 +25,10 @@ class ViewModels::MainWindowComponents::AccountView
 
   def copy_password_to_clipboard
     account.password_store.copy_password_to_clipboard
+  end
+
+  def delete_account
+    account.destroy
   end
 
 end

@@ -16,6 +16,7 @@ frame {
     grid row: 0, column: 1, row_span: 2, row_weight: 0, sticky: 'ne'
     width 0
     image Framework.path('app/assets/fontawesome/png/copy.png').to_s
+    on('command') { account_view.copy_domain_name_to_clipboard }
   }
 }
 
@@ -35,6 +36,7 @@ frame {
     grid row: 0, column: 1, row_span: 2, row_weight: 0, sticky: 'ne'
     width 0
     image Framework.path('app/assets/fontawesome/png/copy.png').to_s
+    on('command') { account_view.copy_account_name_to_clipboard }
   }
 }
 
@@ -54,6 +56,7 @@ frame {
     grid row: 0, column: 1, row_span: 2, row_weight: 0, sticky: 'ne'
     width 0
     image Framework.path('app/assets/fontawesome/png/copy.png').to_s
+    on('command') { account_view.copy_password_to_clipboard }
   }
 }
 
@@ -67,10 +70,30 @@ frame {
   button {
     grid row: 1, sticky: 'se'
     image Framework.path('app/assets/fontawesome/png/trash-can.png').to_s
+    on('command') { |event|
+      account_view.want_delete = true
+    }
+    hidden <= [account_view, :want_delete]
   }
+
+  @delete_account = Views.main_window_components.account_view_components.delete_account {
+    grid row: 1, sticky: 'se'
+    padding 0
+    visible <= [account_view, :want_delete]
+  }
+  @delete_account.on_action {
+    begin
+      account_view.delete_account
+    rescue StandardError => e
+      widget.raise_event 'FlashAlertRequest', "Failed to delete account. Application reports:\n#{e.class}: #{e}"
+    ensure
+      account_view.want_delete = false
+      Views.MainWindow.raise_event 'AccountsListReloadRequest'
+    end
+  }
+  @delete_account.on_cancel { account_view.want_delete = false }
 }
 
-# TODO: implement OnRedirectedEventExpression?
 widget.on_redirected_event('AccountsListSelect') { |event|
   account_view.account_path = event.detail
 }

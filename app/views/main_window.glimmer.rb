@@ -5,12 +5,15 @@ height 600
 # TODO: investigate why `center_within_screen` doesn't work properly
 # center_within_screen
 
+@flash = Views.shared_components.flash_message {
+  grid row: 0
+}
 @toolbar = Views.main_window_components.toolbar {
-  grid row: 0, row_weight: 0
+  grid row: 1, row_weight: 0
   padding 5
 }
 frame {
-  grid row: 1, row_weight: 1
+  grid row: 2, row_weight: 1
   padding 0
   @accounts_list = Views.main_window_components.accounts_list {
     grid row: 0, column: 0, row_weight: 1, column_weight: 1, column_uniform: 'accounts_list_and_view'
@@ -35,34 +38,23 @@ frame {
   }
 }
 
-redirect_event 'SearchEntryKeyUp',   to: @accounts_list
+on('FlashAlertRequest') { |event| @flash.view_model.alert event.detail }
+
+redirect_event 'AccountsListReloadRequest', to: @accounts_list
+redirect_event 'SearchEntryKeyUp', to: @accounts_list
 redirect_event 'SearchEntryKeyDown', to: @accounts_list
 redirect_event 'SearchStringChange', to: @accounts_list
+
+on('AccountsListSelect') { @toolbar.raise_event('SearchStringFocusRequest') }
 redirect_event 'AccountsListSelect', to: -> (_) { if @accounts_list.view_model.selection_is_account?
                                                     @account_view
                                                   else
                                                     @domain_view
                                                   end }
-# on('AccountsListSelect') { |event|
-#   EventProxy.new(event).pass_to if @accounts_list.view_model.selection_is_account
-#                                   @account_view
-#                                 else
-#                                   @domain_view
-#                                 end
-# }
-on('AccountsListSelect') { |event|
-  @toolbar.raise_event('SearchStringFocusRequest')
-}
-on('FocusIn') { |event|
-  @toolbar.raise_event('SearchStringFocusRequest')
-}
+# TODO: it breaks the DeleteAccount entry focus. Better way to keep focus on the search entry?
+# on('FocusIn') { @toolbar.raise_event('SearchStringFocusRequest') }
+
 on('AddAccountWindowCall') { Views.add_account_window }
-on('AccountAdd') { |event|
-  @toolbar.raise_event 'SearchStringClearRequest'
-  # @accounts_list.view_model.selection = event.detail
-  # @accounts_list.view_model.selection_path = event.detail
-  # @accounts_list.view_model.selection = TreeviewUtils.build_branch_from_path(event.detail)
-}
 on('SettingsWindowCall') { Views.settings_window }
 
 on('KeyPress') { |event|

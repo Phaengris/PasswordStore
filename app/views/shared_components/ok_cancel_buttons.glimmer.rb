@@ -5,13 +5,13 @@ button {
   style 'Accent.TButton'
   text 'OK'
   on('command') {
-    widget.raise_event('Action')
+    widget.raise_action
   }
 }
 button {
   grid row: 1, column: 1, sticky: 'se'
   text 'Cancel'
   on('command') {
-    widget.raise_event('Cancel')
+    widget.raise_cancel
   }
 }

@@ -91,8 +91,13 @@ class ActiveFile::Base
   end
 
   def content
-    # TODO: raise a custom exception or just rely on FileNotFound?
+    # TODO: raise a custom exception or just rely on Errno::ENOENT?
     File.read(abs_path)
+  end
+
+  def destroy
+    # TODO: callbacks?
+    File.delete(abs_path)
   end
 
 end

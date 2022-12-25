@@ -33,5 +33,6 @@ widget.on_redirected_event('SearchStringClearRequest') { |event|
     Framework.exit
   else
     @search.text = ''
+    widget.raise_event('SearchStringChange', '')
   end
 }

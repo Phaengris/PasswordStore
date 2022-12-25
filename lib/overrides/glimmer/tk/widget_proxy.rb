@@ -1,4 +1,8 @@
+require 'memoized'
+
 module Glimmer_Tk_WidgetProxy_Override
+  include Memoized
+
   # TODO: RedirectEventExpression?
   # due to some problem in Glimmer we can't make `to` a named argument
   # so it is a hash which expects only one key {to: <target>}
@@ -34,6 +38,31 @@ module Glimmer_Tk_WidgetProxy_Override
   # TODO: RaiseEventExpression?
   def raise_event(event_name, data = nil)
     tk.event_generate("<#{event_name}>", data: (data.is_a?(Hash) ? data.to_yaml : data))
+  end
+
+  # TODO: raise_private_event?
+  # TODO: or use Tk instance events?
+  def raise_action(data = nil)
+    raise_event(private_event_name('Action'), data)
+  end
+
+  def raise_cancel(data = nil)
+    raise_event(private_event_name('Cancel'), data)
+  end
+
+  # TODO: on_private_event?
+  def on_action(&block)
+    on(private_event_name('Action')) do |event|
+      block.call(event)
+      break false
+    end
+  end
+
+  def on_cancel(&block)
+    on(private_event_name('Cancel')) do |event|
+      block.call(event)
+      break false
+    end
   end
 
   def grid(options = {})
@@ -84,8 +113,6 @@ module Glimmer_Tk_WidgetProxy_Override
   def hidden=(value)
     self.visible = !value
   end
-
-  # TODO: decide which one - `enabled` or `disabled` - is more convenient to use (or just keep both?)
 
   def enabled
     # puts "#{self.inspect}.enabled tk.state = \"#{tk.state}\""
@@ -139,6 +166,16 @@ module Glimmer_Tk_WidgetProxy_Override
   # https://github.com/AndyObtiva/glimmer-dsl-tk/blob/v0.0.62/lib/glimmer/tk/toplevel_proxy.rb#L43
   def grab_release
     @tk.grab_release
+  end
+
+  private
+
+  memoize def private_event_name(event_name)
+    "#{private_events_id}_#{event_name}"
+  end
+
+  memoize def private_events_id
+    "#{self.component_path.to_s.split('/').map { |part| part.camelcase(true) }.join('_')}_#{SecureRandom.hex(4)}"
   end
 
   ::Glimmer::Tk::WidgetProxy.prepend self

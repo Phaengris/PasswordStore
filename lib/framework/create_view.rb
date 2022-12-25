@@ -25,6 +25,9 @@ class Framework::CreateView
       end
 
     container = CreateContainer.call(container_type, block)
+    # TODO: <framework name>_component_path?
+    container.define_instance_reader(:component_path, view_path)
+    # TODO: AND / OR container.define_instance_reader(:component_name, component_name)?
     begin
       Framework::RenderView.call(_container: container,
                                  _view_path: view_path,
@@ -63,6 +66,10 @@ class Framework::CreateView
   def window?
     view_path.to_s.end_with?('_window')
   end
+
+  # def component_name
+  #   view_path.split('/').map { |part| part.camelcase(true) }.join('/')
+  # end
 
   class ViewsBacktrace < Array
     include SingletonWithInstanceMethods

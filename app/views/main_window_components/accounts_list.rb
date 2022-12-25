@@ -13,6 +13,7 @@ class ViewModels::MainWindowComponents::AccountsList
   end
 
   on_attr_write(:search_string) do |value, previous_value|
+    _debug(search_string: value)
     entities_list = if value.strip.present?
                       Account
                         .where("**/#{search_mask}.gpg")
@@ -39,6 +40,11 @@ class ViewModels::MainWindowComponents::AccountsList
   alias_method :selection_is_account_value, :selection_is_account
   def selection_is_account
     selection_is_account_value
+  end
+
+  def reload
+    # TODO: let's do it straightforward for now :)
+    self.search_string = self.search_string
   end
 
   private
