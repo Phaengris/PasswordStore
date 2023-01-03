@@ -1,4 +1,5 @@
 module Glimmer_Tk_TreeviewProxy_Override
+
   def widget_custom_attribute_mapping
     @widget_custom_attribute_mapping ||= {
       ::Tk::Tile::Treeview => {
@@ -54,7 +55,7 @@ module Glimmer_Tk_TreeviewProxy_Override
   end
 
   def select_next
-    # TODO: better exception class?
+    # TODO: better exception?
     raise "Works only for single item selection mode" unless selectmode == 'browse'
 
     sel = tk.selection

@@ -6,6 +6,7 @@ class ActiveFile::Base
   class NotInitialized < StandardError; end
   class DoubleInitialization < StandardError; end
   class InvalidFormat < StandardError; end
+  class EntityNotFound < StandardError; end
 
   class << self
     def root_path=(path)
@@ -42,7 +43,7 @@ class ActiveFile::Base
     end
 
     def find(path)
-      where(ActiveFile::Utils.clean_path(path)).first # TODO: raise exception if not found?
+      where(ActiveFile::Utils.clean_path(path)).only(:entities).first || raise(EntityNotFound, "Can't find #{path}")
     end
 
     def entity?(path)
@@ -57,8 +58,8 @@ class ActiveFile::Base
   attr_accessor :path
   private :path=
 
+  # TODO: migrate all string paths to Pathname
   def initialize(path)
-    _debug(path: path)
     self.path = ActiveFile::Utils.clean_path(path)
     self.class.formats.each do |format_class|
       # TODO: method name conflict?
@@ -66,20 +67,63 @@ class ActiveFile::Base
     end
   end
 
-  memoize def entity_name
+  def persisted?
+    File.exists?(abs_path)
+  end
+
+  def content
+    # TODO: raise a custom exception or just rely on Errno::ENOENT?
+    File.read(abs_path)
+  end
+
+  def content=(value)
+    unless Dir.exists?(collection_abs_path)
+      raise "Collection / entity paths conflict" if File.file?(collection_abs_path)
+      FileUtils.mkdir_p(collection_abs_path)
+    end
+    _debug(collection_abs_path: collection_abs_path, abs_path: abs_path)
+
+    File.write(abs_path, value)
+  end
+
+  # TODO: through `path=` setter?
+  def move(new_path)
+    new_path = ActiveFile::Utils.clean_path(new_path)
+    # TODO: rely on FileUtils.move or raise our own exception?
+    FileUtils.move(abs_path, self.class.root_path.join(new_path))
+
+    self.path = new_path
+    unmemoize :name
+    unmemoize :path
+    unmemoize :abs_path
+    unmemoize :collection_name
+    unmemoize :collection_path
+    unmemoize :collection_abs_path
+  end
+
+  memoize def name
     File.basename(path, File.extname(path))
   end
 
-  memoize def collection_path
-    File.dirname(path)
-  end
-
-  memoize def collection_name
-    File.basename(File.dirname(path))
-  end
+  # TODO: we don't want `path` to be changed outside
+  # memoize def path
+  #   self.path.dup
+  # end
 
   memoize def abs_path
     self.class.root_path.join(path)
+  end
+
+  memoize def collection_name
+    File.basename(collection_path)
+  end
+
+  memoize def collection_path
+    path.include?('/') ? File.dirname(path) : ''
+  end
+
+  memoize def collection_abs_path
+    File.dirname(abs_path)
   end
 
   def entity?
@@ -88,11 +132,6 @@ class ActiveFile::Base
 
   def collection?
     false
-  end
-
-  def content
-    # TODO: raise a custom exception or just rely on Errno::ENOENT?
-    File.read(abs_path)
   end
 
   def destroy

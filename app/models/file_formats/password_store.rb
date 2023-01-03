@@ -7,14 +7,14 @@ class FileFormats::PasswordStore < ActiveFile::Format
   CHARACTERS = (('a'..'z').to_a + ('A'..'Z').to_a + ('0'..'9').to_a).join.freeze
   SYMBOLS = "`~!@\#$%^&*()-_=+[{]};:'\",<.>/?".freeze
 
-  def write_password(password, notes: nil)
+  def save_with_password(password, notes: nil)
     raise ArgumentError, "Password can't be blank" if password.to_s.strip.empty?
-    _debug(password: password, path: entity.abs_path)
 
     content = "#{password}\n#{"#{notes}\n" if notes.present?}"
     err = nil
     begin
-      File.write(entity.abs_path, GPGME::Crypto.new.encrypt(content, recipients: gpg_id))
+      # File.write(entity.abs_path, GPGME::Crypto.new.encrypt(content, recipients: gpg_id))
+      entity.content = GPGME::Crypto.new.encrypt(content, recipients: gpg_id)
     rescue StandardError => e
       err = e
     ensure
@@ -26,10 +26,10 @@ class FileFormats::PasswordStore < ActiveFile::Format
     nil
   end
 
-  def generate_password(length: 16, no_symbols: false, notes: nil)
+  def save_with_generated_password(length: 16, no_symbols: false, notes: nil)
     set = CHARACTERS.dup
     set += SYMBOLS unless no_symbols
-    write_password(length.times.map { |_| set[rand(set.length)] }.join, notes: notes)
+    save_with_password(length.times.map { |_| set[rand(set.length)] }.join, notes: notes)
     nil
   end
 
@@ -50,8 +50,7 @@ class FileFormats::PasswordStore < ActiveFile::Format
     nil
   end
 
-  private
-
+  # TODO: `with_password(&block)` then wipe the password variable?
   def fetch_password
     decrypted = GPGME::Crypto.new.decrypt(entity.content).to_s
     decrypted_lines = decrypted.split("\n")
@@ -64,6 +63,8 @@ class FileFormats::PasswordStore < ActiveFile::Format
 
     password
   end
+
+  private
 
   def wipe_string_variable(var)
     return unless var

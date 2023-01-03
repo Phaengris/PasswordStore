@@ -28,9 +28,8 @@ class Framework::ViewModelErrors < OpenStruct
     !any?
   end
 
-  def consume_contract_errors(contract_errors)
-    contract_errors = contract_errors.to_h
+  def call_contract(contract_class, values_to_validate)
+    contract_errors = contract_class.new.call(values_to_validate).errors.to_h
     self.keys.each { |key| self.send("#{key}=", contract_errors[key]&.to_sentence&.capitalize) }
   end
-  alias_method :from_contract, :consume_contract_errors
 end

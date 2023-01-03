@@ -13,7 +13,6 @@ class ViewModels::MainWindowComponents::AccountsList
   end
 
   on_attr_write(:search_string) do |value, previous_value|
-    _debug(search_string: value)
     entities_list = if value.strip.present?
                       Account
                         .where("**/#{search_mask}.gpg")
@@ -33,6 +32,7 @@ class ViewModels::MainWindowComponents::AccountsList
     self.selection_is_account = Account.entity?(build_path_from_branch(value))
   end
 
+  # TODO: update selection when selection_path=
   # on_attr_write(:selection_path) do |value, previous_value|
   #
   # end
@@ -56,6 +56,8 @@ class ViewModels::MainWindowComponents::AccountsList
   def search_regexp
     Regexp.new(search_string.strip.split(/[\/\s]+/).reject(&:blank?).map { |part| Regexp.quote(part) }.join('.*'))
   end
+
+  # TODO: move all these into smth like TreeviewUtils ?
 
   def build_tree_from_paths(list)
     tree = []

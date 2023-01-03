@@ -1,3 +1,4 @@
+# TODO: is it a good idea at all?
 module SingletonWithInstanceMethods
 
   def self.included(base)

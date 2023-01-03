@@ -177,6 +177,8 @@ class Framework::Dev::Scene
   end
 
   class SceneEvaluator
+    include Glimmer
+
     def initialize(_scene_content:)
       @_scenarios = {}
 

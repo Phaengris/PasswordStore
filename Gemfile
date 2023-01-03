@@ -18,3 +18,5 @@ gem "memoized", "~> 1.1"
 gem "dry-validation", "~> 1.10"
 
 gem "gpgme", "~> 2.0"
+
+gem "pastel", "~> 0.8.0"

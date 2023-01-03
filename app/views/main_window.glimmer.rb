@@ -1,20 +1,22 @@
-x 800 + 1024
-y 350 + 0
-width 800
-height 600
-# TODO: investigate why `center_within_screen` doesn't work properly
-# center_within_screen
+title "Passwords of #{Account.password_store.gpg_id}"
+iconphoto Framework.asset_path('fontawesome/appicon.png').to_s
+width 1024
+height 1024 / 1.618 # why not? :)
+centered true
 
 @flash = Views.shared_components.flash_message {
-  grid row: 0
+  grid row: rows.next, row_weight: 0
 }
+
 @toolbar = Views.main_window_components.toolbar {
-  grid row: 1, row_weight: 0
+  grid row: rows.next, row_weight: 0
   padding 5
 }
+
 frame {
-  grid row: 2, row_weight: 1
+  grid row: rows.next, row_weight: 1
   padding 0
+
   @accounts_list = Views.main_window_components.accounts_list {
     grid row: 0, column: 0, row_weight: 1, column_weight: 1, column_uniform: 'accounts_list_and_view'
     width 0
@@ -25,11 +27,13 @@ frame {
     grid row: 0, column: 1, row_weight: 0, column_weight: 1, column_uniform: 'accounts_list_and_view'
     width 0
     padding 20, 20, 5, 5
+
     @domain_view = Views.main_window_components.domain_view {
       grid row: 0, column: 0, row_weight: 1
       padding 0
       visible <= [@accounts_list.view_model, :selection_is_account, '<=': -> (v) { v.nil? ? false : !v }]
     }
+
     @account_view = Views.main_window_components.account_view {
       grid row: 0, column: 0
       padding 0
@@ -38,26 +42,34 @@ frame {
   }
 }
 
-on('FlashAlertRequest') { |event| @flash.view_model.alert event.detail }
+on 'FlashSuccessRequest',
+   'FlashInfoRequest',
+   'FlashAlertRequest',
+   'FlashExceptionAlertRequest',
+   redirect_to: @flash
 
-redirect_event 'AccountsListReloadRequest', to: @accounts_list
-redirect_event 'SearchEntryKeyUp', to: @accounts_list
-redirect_event 'SearchEntryKeyDown', to: @accounts_list
-redirect_event 'SearchStringChange', to: @accounts_list
+on 'AccountsListReloadRequest',
+   'SearchEntryKeyUp',
+   'SearchEntryKeyDown',
+   'SearchStringChange',
+   redirect_to: @accounts_list
 
-on('AccountsListSelect') { @toolbar.raise_event('SearchStringFocusRequest') }
-redirect_event 'AccountsListSelect', to: -> (_) { if @accounts_list.view_model.selection_is_account?
-                                                    @account_view
-                                                  else
-                                                    @domain_view
-                                                  end }
+on('AccountsListSelect') do
+  @toolbar.raise_event 'SearchStringFocusRequest'
+end
+on 'AccountsListSelect', redirect_to: -> (_) { if @accounts_list.view_model.selection_is_account?
+                                                 @account_view
+                                               else
+                                                 @domain_view
+                                               end }
 # TODO: it breaks the DeleteAccount entry focus. Better way to keep focus on the search entry?
 # on('FocusIn') { @toolbar.raise_event('SearchStringFocusRequest') }
 
-on('AddAccountWindowCall') { Views.add_account_window }
-on('SettingsWindowCall') { Views.settings_window }
+on('AddAccountWindowRequest') do
+  Views.add_account_window
+end
 
-on('KeyPress') { |event|
+on('KeyPress') do |event|
   # event_proxy = EventProxy.new(event)
   # event_proxy.ctrl? && event_proxy.keysym?('a')
   # event_proxy.keypress?('ctrl a')
@@ -86,10 +98,14 @@ on('KeyPress') { |event|
     Views.add_account_window
   when ['e', 4]
     # edit account
-  when ['d', 4]
-    # delete account
+  when ['delete', 0]
+    if @domain_view.visible?
+      @domain_view.raise_event('DeleteDomainRequest')
+    else
+      @account_view.raise_event('DeleteAccountRequest')
+    end
 
   when ['q', 4]
     Framework.exit
   end
-}
+end

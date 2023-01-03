@@ -1,17 +1,20 @@
-# grid row_weight: 1
-frame { grid row: 0, pady: [0, 15] }
-button {
-  grid row: 1, column: 0, row_weight: 1, sticky: 'se', padx: [0, 5]
-  style 'Accent.TButton'
-  text 'OK'
-  on('command') {
-    widget.raise_action
+rows_separator
+
+rows.with_next do |row|
+  button {
+    grid row: row, column: 0, row_weight: 1, sticky: 'se', padx: [0, 5]
+    style 'Accent.TButton'
+    text 'OK'
+    on('command') do
+      action
+    end
   }
-}
-button {
-  grid row: 1, column: 1, sticky: 'se'
-  text 'Cancel'
-  on('command') {
-    widget.raise_cancel
+
+  button {
+    grid row: row, column: 1, sticky: 'se'
+    text 'Cancel'
+    on('command') do
+      cancel
+    end
   }
-}
+end

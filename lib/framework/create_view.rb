@@ -2,6 +2,7 @@ class Framework::CreateView
   include Callable
 
   class RecursiveViewCall < StandardError; end
+
   class TemplateNotFound < StandardError; end
 
   init_with_attributes :view_path, :args, :block
@@ -24,10 +25,11 @@ class Framework::CreateView
         view_model_class_name.safe_constantize&.new
       end
 
-    container = CreateContainer.call(container_type, block)
-    # TODO: <framework name>_component_path?
-    container.define_instance_reader(:component_path, view_path)
-    # TODO: AND / OR container.define_instance_reader(:component_name, component_name)?
+    container = CreateContainer.call(_container_type: container_type,
+                                     _view_path: view_path,
+                                     _view_model_instance: view_model_instance,
+                                     _header_block: block)
+
     begin
       Framework::RenderView.call(_container: container,
                                  _view_path: view_path,
@@ -43,7 +45,6 @@ class Framework::CreateView
       end
     else
       ViewsBacktrace.pop
-      container.define_instance_reader(:view_model, view_model_instance)
       Framework::Dev::Scene.patch_glimmer_container(container) if Framework::Dev::Scene.watched?
     end
     container
@@ -83,28 +84,23 @@ class Framework::CreateView
     include Glimmer
     include Callable
 
-    init_with_attributes :_container_type, :_header_block
+    init_with_attributes :_container_type, :_view_path, :_view_model_instance, :_header_block
 
     def call
-      if _container_type == :toplevel && !ViewsBacktrace.from_main_window?
-        Views.MainWindow.content do
-          @_container = toplevel {
-            define_instance_reader :widget, self
+      container = if _container_type == :toplevel && !ViewsBacktrace.from_main_window?
+                    _c = nil
+                    Views.MainWindow.content do
+                      _c = toplevel {}
+                    end
+                    _c
 
-            # instance_exec(&_header_block) if _header_block
-            _header_block.call if _header_block
-          }
-        end
-
-      else
-        @_container = send(_container_type) {
-          define_instance_reader :widget, self
-
-          # instance_exec(&_header_block) if _header_block
-          _header_block.call if _header_block
-        }
-      end
-      @_container
+                  else
+                    send(_container_type) {}
+                  end
+      container.define_instance_reader(:view_path, _view_path)
+      container.define_instance_reader(:view_model, _view_model_instance)
+      container.content(&_header_block) if _header_block
+      container
     end
 
   end

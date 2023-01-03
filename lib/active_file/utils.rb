@@ -3,8 +3,7 @@ module ActiveFile::Utils
 
   class << self
 
-    # TODO: how to avoid symlinks?
-    # TODO: just use Pathname#expand_path or smth like that?
+    # TODO: migrate to Pathname
     def clean_path(dirty_path)
       clean_path = []
       dirty_path.to_s.split('/').each do |part|

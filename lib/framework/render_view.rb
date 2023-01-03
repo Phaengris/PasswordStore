@@ -3,14 +3,7 @@ class Framework::RenderView
   include Framework::ViewHelpers
   include Callable
 
-  class ErrorInTemplate < StandardError
-    attr_accessor :container
-    private :container=
-    def initialize(msg = nil, failed_container)
-      self.container = failed_container
-      super(msg)
-    end
-  end
+  delegate :raise_event, :action, :cancel, :close_window, to: :_container
 
   init_with_attributes :_container,
                        :_view_path,
@@ -35,7 +28,8 @@ class Framework::RenderView
       _view_abs_path = Framework.path("app/views").join("#{_view_path}.glimmer.rb")
       _container.content do
         instance_eval(File.read(_view_abs_path))
-        instance_exec(&_body_block) if _body_block
+        # instance_exec(&_body_block) if _body_block
+        _body_block.call if _body_block
       end
 
     rescue StandardError, SyntaxError, NoMethodError => e
@@ -56,7 +50,17 @@ class Framework::RenderView
       e.backtrace.each { |line| puts "  #{line}" }
       raise ErrorInTemplate.new(error_message, _container)
     else
+      # TODO: print this if development mode?
       # puts "Rendered #{_view_abs_path}"
+    end
+  end
+
+  class ErrorInTemplate < StandardError
+    attr_accessor :container
+    private :container=
+    def initialize(msg = nil, failed_container)
+      self.container = failed_container
+      super(msg)
     end
   end
 

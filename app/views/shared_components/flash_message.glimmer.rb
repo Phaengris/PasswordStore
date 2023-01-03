@@ -9,7 +9,7 @@ style <= [flash_message, :style, '<=': -> (style) { if style
 frame {
   grid row: 0, sticky: 'nse'
   style <= [flash_message, :style, '<=': -> (style) { if style
-                                                        "FlashAlertTimeout.TFrame"
+                                                        "Flash#{style.capitalize}Timeout.TFrame"
                                                       else
                                                         'TFrame'
                                                       end } ]
@@ -17,6 +17,7 @@ frame {
   padding 0
   width <= [flash_message.timeout, :value, '<=': -> (v) { (widget.tk.winfo_width * v / 100).floor }]
 }
+
 frame {
   grid row: 1
   style <= [flash_message, :style, '<=': -> (style) { if style
@@ -35,3 +36,17 @@ frame {
     # TODO: wraplength
   }
 }
+
+on('FlashSuccessRequest', redirected: true) do |event|
+  flash_message.success event.detail
+end
+on('FlashInfoRequest', redirected: true) do |event|
+  flash_message.info event.detail
+end
+on('FlashAlertRequest', redirected: true) do |event|
+  flash_message.alert event.detail
+end
+on('FlashExceptionAlertRequest', redirected: true) do |event|
+  # TODO: move exception load with some safety measures into the view model?
+  flash_message.alert YAML.unsafe_load(event.detail)
+end

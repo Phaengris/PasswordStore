@@ -11,8 +11,21 @@ module Framework
     path('app/views')
   end
 
+  def self.view_path(path)
+    views_path.join(path)
+  end
+
+  def self.assets_path
+    path('app/assets')
+  end
+
+  def self.asset_path(path)
+    assets_path.join(path)
+  end
+
   def self.exit
-    # TODO: may be some exit handlers
+    # TODO: exit callbacks?
+    Views.MainWindow.destroy if Views.main_window_ready?
     Kernel.exit
   end
 end

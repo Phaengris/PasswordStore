@@ -1,7 +1,7 @@
 require_relative './utils'
 
+# TODO: migrate all string paths to Pathname
 class ActiveFile::Collection
-  # TODO: move all string paths to Pathname
   include Enumerable
 
   class NotHandleableEntity < StandardError; end
@@ -44,8 +44,18 @@ class ActiveFile::Collection
     self
   end
 
-  def abs_path(path)
+  def path
+    raise UndeterminedCollection unless determined?
+
+    paths.first
+  end
+
+  def abs_path_for(path)
     klass.root_path.join(ActiveFile::Utils.clean_path(path))
+  end
+
+  def determined?
+    paths.one? && !paths.first.include?('*')
   end
 
   def collection?
@@ -57,21 +67,42 @@ class ActiveFile::Collection
   end
 
   def name
-    raise UndeterminedCollection, "More than one paths: #{paths.pretty_inspect}" unless paths.one?
-    raise UndeterminedCollection, "Path contains wildcards: #{paths.first}" if paths.first.to_s.include?('*')
-    paths.first.to_s.split('/').last
+    raise UndeterminedCollection unless determined?
+
+    # path.basename
+    File.basename(path)
+  end
+
+  def parent
+    raise UndeterminedCollection unless determined?
+    return nil if path.blank?
+
+    new(klass, path, options)
+  end
+
+  def destroy
+    # TODO: callbacks?
+    if determined?
+      FileUtils.rm_rf(abs_path_for(path))
+    else
+      # TODO: implement it... when we'll need it
+      raise NotImplementedError, "Deleting of a undetermined collection is not implemented yet"
+    end
   end
 
   private
 
   def build_list
-    list = paths.map { |path| Dir.glob(abs_path(path)) }.flatten
+    list = paths.map { |path| Dir.glob(abs_path_for(path)) }.flatten
     list.reject! { |entry| File.directory?(entry) }  if options[:only] == :entities
     list.reject! { |entry| File.file?(entry) }       if options[:only] == :collections
     list
   end
 
   def abs_to_local_path(abs_path)
+    # abs_path = Pathname.new(abs_path) unless abs_path.is_a?(Pathname)
+    # abs_path.relative_path_from(klass.root_path)
+
     abs_path.delete_prefix(klass.root_path.to_s)
   end
 
