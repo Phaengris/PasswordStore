@@ -81,7 +81,6 @@ class ActiveFile::Base
       raise "Collection / entity paths conflict" if File.file?(collection_abs_path)
       FileUtils.mkdir_p(collection_abs_path)
     end
-    _debug(collection_abs_path: collection_abs_path, abs_path: abs_path)
 
     File.write(abs_path, value)
   end
@@ -89,6 +88,13 @@ class ActiveFile::Base
   # TODO: through `path=` setter?
   def move(new_path)
     new_path = ActiveFile::Utils.clean_path(new_path)
+
+    new_collection_abs_path = self.class.root_path.join(File.dirname(new_path))
+    unless Dir.exists?(new_collection_abs_path)
+      raise "Collection / entity paths conflict" if File.file?(new_collection_abs_path)
+      FileUtils.mkdir_p(new_collection_abs_path)
+    end
+
     # TODO: rely on FileUtils.move or raise our own exception?
     FileUtils.move(abs_path, self.class.root_path.join(new_path))
 

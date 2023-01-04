@@ -121,9 +121,9 @@ module Glimmer_Tk_TreeviewProxy_Override
     items.each do |item|
       if item.is_a?(Hash)
         sub_root_id = if root_id == ''
-                        item.keys.first
+                        "i_#{item.keys.first}"
                       else
-                        "#{root_id}_#{item.keys.first}"
+                        "i_#{root_id}_#{item.keys.first}"
                       end
         @tk.insert(root_id, 'end', id: sub_root_id.to_sym, text: item.keys.first)
         insert_items(sub_root_id, item.values.first)

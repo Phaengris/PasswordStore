@@ -17,6 +17,9 @@ frame {
     grid row: 0, column: 1, row_span: 2, row_weight: 0, sticky: 'ne'
     width 0
     image Framework.asset_path('fontawesome/buttons/pen-to-square.png').to_s
+    on('command') do
+      Views.edit_domain_window { domain_path domain_view.domain_path }
+    end
   }
 }
 

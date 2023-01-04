@@ -4,7 +4,7 @@ class Framework::ViewModelErrors < OpenStruct
   attr_internal_accessor :keys
 
   def initialize(keys)
-    keys = keys.map(&:to_sym)
+    keys = Array(keys).map(&:to_sym)
 
     if (forbidden_keys = keys & self.class.instance_methods(false)).any?
       raise ArgumentError, <<-MSG.squish.strip

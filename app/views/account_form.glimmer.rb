@@ -1,3 +1,5 @@
+padding 0
+
 frame {
   grid row: rows.next, row_weight: 1
 

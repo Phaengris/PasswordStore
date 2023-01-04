@@ -50,6 +50,10 @@ class ActiveFile::Collection
     paths.first
   end
 
+  def abs_path
+    klass.root_path.join(path)
+  end
+
   def abs_path_for(path)
     klass.root_path.join(ActiveFile::Utils.clean_path(path))
   end
@@ -78,6 +82,35 @@ class ActiveFile::Collection
     return nil if path.blank?
 
     new(klass, path, options)
+  end
+
+  def move(new_path)
+    raise UndeterminedCollection unless determined?
+    raise ArgumentError, 'Can\'t move the root collection' if path.blank?
+
+    new_path = ActiveFile::Utils.clean_path(new_path)
+    return if new_path == path
+
+    new_abs_path = klass.root_path.join(new_path)
+    if File.exists?(new_abs_path)
+      raise ArgumentError, "The destination path already exists"
+    end
+    # TODO: or let's allow it? move to a tmp dir, create an empty dir tree, then move the tmp dir into it?
+    if new_path[0...path.length] == "#{path}/"
+      raise ArgumentError, "Can't move a collection inside itself"
+    end
+
+    new_parent_path = File.dirname(new_path)
+    if new_parent_path && new_parent_path != '.'
+      new_parent_abs_path = klass.root_path.join(new_parent_path)
+      unless Dir.exists?(new_parent_abs_path)
+        raise "Collection / entity paths conflict" if File.file?(new_parent_abs_path)
+        FileUtils.mkdir_p(new_parent_abs_path)
+      end
+    end
+
+    FileUtils.move(abs_path, klass.root_path.join(new_path))
+    self.paths[0] = new_path
   end
 
   def destroy
