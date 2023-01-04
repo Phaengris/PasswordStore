@@ -17,6 +17,7 @@ class ViewModels::AccountForm
 
   alias_method :password_generated?, :password_generated
   alias_method :password_no_symbols?, :password_no_symbols
+  alias_method :password_visible?, :password_visible
 
   def account_path=(value)
     if value.present?
@@ -60,8 +61,8 @@ class ViewModels::AccountForm
     values[:domain] = domain if domain.present?
     unless password_generated?
       values[:password] = password
-      values[:password_visible] = password_visible
-      values[:password_confirmation] = password_confirmation unless password_visible
+      values[:password_visible] = password_visible?
+      values[:password_confirmation] = password_confirmation unless password_visible?
     end
     errors.call_contract(Contract, values)
   end
@@ -104,7 +105,7 @@ class ViewModels::AccountForm
     end
 
     rule(:password_confirmation, :password, :password_generated, :password_visible ) do
-      if !values[:password_generated] && values[:password_visible]
+      if !values[:password_generated] && !values[:password_visible]
         if values[:password].present?
           key.failure('Must match the password') if values[:password] != values[:password_confirmation]
         end

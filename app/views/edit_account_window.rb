@@ -12,7 +12,8 @@ class ViewModels::EditAccountWindow
   def update_account(form_view_model)
     account = Account.find(account_path)
 
-    if form_view_model.account_path != account_path
+    # TODO: migrate paths to Pathname, then get rid of to_s here
+    if form_view_model.account_path.to_s != account_path.to_s
       account.move(form_view_model.account_path)
     end
 

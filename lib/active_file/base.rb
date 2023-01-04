@@ -88,6 +88,7 @@ class ActiveFile::Base
   # TODO: through `path=` setter?
   def move(new_path)
     new_path = ActiveFile::Utils.clean_path(new_path)
+    return if path == new_path
 
     new_collection_abs_path = self.class.root_path.join(File.dirname(new_path))
     unless Dir.exists?(new_collection_abs_path)
