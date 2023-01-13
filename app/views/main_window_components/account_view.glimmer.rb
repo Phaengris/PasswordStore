@@ -17,7 +17,7 @@ frame {
   button {
     grid row: 0, column: 1, row_span: 2, row_weight: 0, sticky: 'ne'
     width 0
-    image Framework.path('app/assets/fontawesome/buttons/copy.png').to_s
+    image Glimte.path('app/assets/fontawesome/buttons/copy.png').to_s
     on('command') do
       account_view.copy_domain_name_to_clipboard
     end
@@ -42,7 +42,7 @@ frame {
   button {
     grid row: 0, column: 1, row_span: 2, row_weight: 0, sticky: 'ne'
     width 0
-    image Framework.path('app/assets/fontawesome/buttons/copy.png').to_s
+    image Glimte.path('app/assets/fontawesome/buttons/copy.png').to_s
     on('command') do
       account_view.copy_account_name_to_clipboard
     end
@@ -69,9 +69,9 @@ frame {
     width 0
     image <= [account_view, :password, '<=': -> (v) {
       if v.present?
-        Framework.path('app/assets/fontawesome/buttons/eye-slash.png').to_s
+        Glimte.path('app/assets/fontawesome/buttons/eye-slash.png').to_s
       else
-        Framework.path('app/assets/fontawesome/buttons/eye.png').to_s
+        Glimte.path('app/assets/fontawesome/buttons/eye.png').to_s
       end
     }]
     on('command') do
@@ -82,7 +82,7 @@ frame {
   button {
     grid row: 0, column: 2, row_span: 2, row_weight: 0, sticky: 'ne'
     width 0
-    image Framework.path('app/assets/fontawesome/buttons/copy.png').to_s
+    image Glimte.path('app/assets/fontawesome/buttons/copy.png').to_s
     on('command') do
       account_view.copy_password_to_clipboard
     end
@@ -95,7 +95,7 @@ frame {
 
   button {
     grid row: 0, row_weight: 1, sticky: 'ne', pady: [0, 15]
-    image Framework.path('app/assets/fontawesome/buttons/pen-to-square.png').to_s
+    image Glimte.path('app/assets/fontawesome/buttons/pen-to-square.png').to_s
     on('command') do
       Views.edit_account_window {
         account_path account_view.account_path
@@ -106,7 +106,7 @@ frame {
   button {
     grid row: 1, sticky: 'se'
     hidden <= [account_view, :want_delete]
-    image Framework.path('app/assets/fontawesome/buttons/trash-can.png').to_s
+    image Glimte.path('app/assets/fontawesome/buttons/trash-can.png').to_s
     on('command') do
       account_view.want_delete = true
     end

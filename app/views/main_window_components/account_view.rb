@@ -1,6 +1,8 @@
 require 'clipboard'
 
 class ViewModels::MainWindowComponents::AccountView
+  include Glimte::Utils::Attr
+
   attr_accessor :account_path,
                 :want_delete,
                 :password

@@ -16,7 +16,7 @@ frame {
   button {
     grid row: 0, column: 1, row_span: 2, row_weight: 0, sticky: 'ne'
     width 0
-    image Framework.asset_path('fontawesome/buttons/pen-to-square.png').to_s
+    image Glimte.asset_path('fontawesome/buttons/pen-to-square.png').to_s
     on('command') do
       Views.edit_domain_window { domain_path domain_view.domain_path }
     end
@@ -29,7 +29,7 @@ frame {
   button {
     grid row: 0, sticky: 'se', row_weight: 1
     hidden <= [domain_view, :want_delete]
-    image Framework.path('app/assets/fontawesome/buttons/trash-can.png').to_s
+    image Glimte.path('app/assets/fontawesome/buttons/trash-can.png').to_s
     on('command') do
       domain_view.want_delete = true
     end

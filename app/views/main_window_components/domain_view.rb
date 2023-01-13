@@ -1,11 +1,13 @@
 require 'clipboard'
 
 class ViewModels::MainWindowComponents::DomainView
+  include Glimte::Utils::Attr
+
   attr_accessor :domain_path, :want_delete
 
   attr_internal_accessor :domain
 
-  delegate :name, to: :domain, allow_nil: true
+  delegate :name, :parent, to: :domain, allow_nil: true
 
   on_attr_write(:domain_path) do |value|
     self.domain = Account.where(value).only(:collections).first if value.present?

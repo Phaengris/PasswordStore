@@ -1,7 +1,10 @@
 require 'gpgme'
 require 'clipboard'
+require 'memoized'
 
 class FileFormats::PasswordStore < ActiveFile::Format
+  include Memoized
+
   class PasswordStoreError < StandardError; end
 
   CHARACTERS = (('a'..'z').to_a + ('A'..'Z').to_a + ('0'..'9').to_a).join.freeze

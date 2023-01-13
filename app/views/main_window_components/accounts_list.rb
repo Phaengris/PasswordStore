@@ -1,4 +1,6 @@
 class ViewModels::MainWindowComponents::AccountsList
+  include Glimte::Utils::Attr
+
   attr_accessor :search_string
   attr_accessor :selection
   attr_accessor :selection_options

@@ -1,4 +1,6 @@
 class ViewModels::EditAccountWindow
+  include Glimte::Utils::Attr
+
   attr_accessor :account_path
   attr_internal_accessor :account
 

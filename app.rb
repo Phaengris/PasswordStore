@@ -1,5 +1,9 @@
 #!/usr/bin/env ruby
 
-require_relative './config/boot'
+# TODO: well, should we get rid of ActiveSupport?
+require 'active_support/inflector'
+require 'active_support/core_ext/string/filters'
 
-Views.MainWindow.open
+require 'glimte'
+
+Glimte.run

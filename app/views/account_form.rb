@@ -27,7 +27,7 @@ class ViewModels::AccountForm
         self.password_generated = false
         self.password = account.password_store.fetch_password
         self.password_confirmation = self.password.dup
-        self.changes = Framework::ViewModelChanges.new(self, :domain, :account, :password)
+        self.changes = Glimte::ViewModelChanges.new(self, :domain, :account, :password)
       end
     else
       # TODO: should we expect un-setting account data?
@@ -36,7 +36,7 @@ class ViewModels::AccountForm
   end
 
   def initialize
-    self.errors = Framework::ViewModelErrors.new(%i[domain account password password_confirmation])
+    self.errors = Glimte::ViewModelErrors.new(%i[domain account password password_confirmation])
 
     self.password_generated = true
     self.password_length = 16

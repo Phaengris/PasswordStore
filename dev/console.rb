@@ -2,7 +2,7 @@
 
 require_relative '../config/boot'
 
-cmd = Framework::Dev::ConsoleCommand.new
+cmd = Glimte::Dev::ConsoleCommand.new
 cmd.run
 
 interactive_mode = true

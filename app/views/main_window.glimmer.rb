@@ -1,5 +1,5 @@
 title "Passwords of #{Account.password_store.gpg_id}"
-iconphoto Framework.asset_path('fontawesome/appicon.png').to_s
+iconphoto Glimte.asset_path('fontawesome/appicon.png').to_s
 width 1024
 height 1024 / 1.618 # why not? :)
 centered true
@@ -106,6 +106,6 @@ on('KeyPress') do |event|
     end
 
   when ['q', 4]
-    Framework.exit
+    Glimte.exit
   end
 end

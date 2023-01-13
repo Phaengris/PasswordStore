@@ -23,7 +23,7 @@ entry {
 
 button {
   grid row: 1, column: 1, padx: [0, 5]
-  image Framework.path('app/assets/fontawesome/buttons/trash-can.png').to_s
+  image Glimte.path('app/assets/fontawesome/buttons/trash-can.png').to_s
   enabled <= [delete_confirmation, :code_confirmation, '<=': -> (code_confirmation) { delete_confirmation.code == code_confirmation }]
   on('command') do
     action
@@ -32,7 +32,7 @@ button {
 
 button {
   grid row: 1, column: 2
-  image Framework.path('app/assets/fontawesome/buttons/xmark.png').to_s
+  image Glimte.path('app/assets/fontawesome/buttons/xmark.png').to_s
   on('command') do
     cancel
   end

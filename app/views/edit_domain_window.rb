@@ -1,6 +1,8 @@
 require 'dry/validation'
 
 class ViewModels::EditDomainWindow
+  include Glimte::Utils::Attr
+
   attr_accessor :domain_path,
                 :errors
 
@@ -13,7 +15,7 @@ class ViewModels::EditDomainWindow
   end
 
   def initialize
-    self.errors = Framework::ViewModelErrors.new(:domain_path)
+    self.errors = Glimte::ViewModelErrors.new(:domain_path)
   end
 
   def update_domain
